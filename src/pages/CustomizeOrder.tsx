@@ -2,17 +2,31 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Check, Verified, ShoppingCart, Minus, Plus } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useCart } from '../contexts/CartContext';
 
 const riceImage = "https://lh3.googleusercontent.com/aida-public/AB6AXuDOKYVkSAThdFox_Rm6aKWzQfZdJamvPRq3Yp-YTKk2s944tiAqESoA4W3fcqfLFpnpvWevRWe2frVhwID9eYv0UE7xzbNn6PabpAWXNiWnFgFXBF6TFKIFHgmCeqK3q9Hs1q2JfJpNq3zt6Cy-gXjiK97iBFJYxTIjlETl8YXXbDOgIAT3gN6cOaK_9Iq6VjC-ZdddXc9iPEyJ-QGmHFXb2BBFMV38IZ05v0Sq53VZwVoduuHEaDQhoMKGctq6UpU-FcBxQEpuEFg";
 
 export default function CustomizeOrder() {
   const navigate = useNavigate();
+  const { addToCart } = useCart();
   const [packSize, setPackSize] = useState('5 kg');
   const [quantity, setQuantity] = useState(1);
   const [frequency, setFrequency] = useState('one-time');
 
+  const handleAddToCart = () => {
+    addToCart({
+      name: 'Premium Sona Masuri',
+      price: 249,
+      quantity,
+      size: packSize,
+      frequency,
+      level: 5
+    });
+    navigate('/cart');
+  };
+
   return (
-    <div className="flex flex-col min-h-full bg-surface pb-32">
+    <div className="flex flex-col min-h-full bg-surface pb-44">
       <main className="max-w-md mx-auto w-full">
         {/* Hero Product Card */}
         <section className="px-container mt-4 mb-8">
@@ -139,15 +153,15 @@ export default function CustomizeOrder() {
         </section>
       </main>
 
-      {/* Sticky Bottom Bar */}
-      <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-surface-container-lowest border-t border-surface-variant shadow-lg z-50 pt-5 pb-8 px-5">
+      {/* Sticky Bottom Bar - Offset to sit above global nav */}
+      <div className="fixed bottom-20 left-0 right-0 max-w-md mx-auto bg-white/90 backdrop-blur-md border-t border-surface-container shadow-[0px_-4px_16px_rgba(0,0,0,0.04)] z-40 pt-4 pb-4 px-5">
         <div className="flex items-center justify-between gap-6">
           <div className="flex flex-col">
             <span className="text-xs text-on-surface-variant font-medium">Total Price</span>
             <span className="text-2xl font-bold text-on-surface">₹{249 * quantity}</span>
           </div>
           <button 
-            onClick={() => navigate('/order-success')}
+            onClick={handleAddToCart}
             className="flex-1 bg-primary text-on-primary font-display font-semibold py-4 rounded-full shadow-sm hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2"
             id="add-to-cart-button"
           >

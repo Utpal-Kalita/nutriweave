@@ -93,9 +93,21 @@ export default function MatchResult() {
 
         {/* Tags */}
         <div className="flex flex-wrap justify-center gap-2 w-full mb-6">
-          <span className="bg-emerald-50 text-emerald-700 border border-emerald-100 font-bold text-xs px-4 py-2 rounded-full shadow-sm">High Minerals</span>
-          <span className="bg-amber-50 text-amber-700 border border-amber-100 font-bold text-xs px-4 py-2 rounded-full shadow-sm">Steady Energy</span>
-          <span className="bg-blue-50 text-blue-700 border border-blue-100 font-bold text-xs px-4 py-2 rounded-full shadow-sm">Good Protein</span>
+          {['High Minerals', 'Steady Energy', 'Good Protein'].map((tag, i) => (
+            <motion.span 
+              key={tag}
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.8 + (i * 0.1) }}
+              className={`font-bold text-xs px-4 py-2 rounded-full shadow-sm border ${
+                i === 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
+                i === 1 ? 'bg-amber-50 text-amber-700 border-amber-100' :
+                'bg-blue-50 text-blue-700 border-blue-100'
+              }`}
+            >
+              {tag}
+            </motion.span>
+          ))}
         </div>
 
         <button 
@@ -110,7 +122,7 @@ export default function MatchResult() {
 
       {/* Action Button */}
       <button 
-        onClick={() => navigate('/order')}
+        onClick={() => navigate('/customize')}
         className="bg-primary hover:bg-primary-container text-white font-display text-lg font-semibold w-full py-4 rounded-full flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-95 transition-all mt-4"
         id="continue-to-order-button"
       >

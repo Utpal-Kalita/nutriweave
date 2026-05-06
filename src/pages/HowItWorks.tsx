@@ -104,7 +104,7 @@ export default function HowItWorks() {
       {/* Fixed Bottom CTA Panel */}
       <div className="sticky bottom-0 left-0 w-full px-container py-6 bg-surface-container-lowest border-t border-surface-container-highest/30 shadow-[0px_-10px_30px_rgba(0,0,0,0.03)] z-50">
         <button 
-          onClick={() => navigate('/selection')}
+          onClick={() => navigate('/priority')}
           className="w-full bg-primary text-on-primary font-display font-semibold h-14 rounded-full flex items-center justify-center active:scale-[0.98] transition-transform duration-200 shadow-sm"
           id="continue-button-how"
         >
