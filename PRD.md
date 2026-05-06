@@ -26,37 +26,37 @@ A web-based application to help users select and purchase rice based on their nu
 
 ### 4.1 User Flow
 
-1. **Landing Page**
+1. Landing Page
 
-   - Introduction to product
-   - “Get Started” button
+ - Introduction to product
+ - “Get Started” button
 
-2. **Preference Selection**
+2. Preference Selection
 
-   - Users select priorities (e.g., minerals, protein, glycemic control)
-   - Slider/input-based interface
+ - Users select priorities (e.g., minerals, protein, glycemic control)
+ - Slider/input-based interface
 
-3. **Recommendation Result**
+3. Recommendation Result
 
-   - Display recommendation level (1–10)
-   - Show explanation (optional later)
-   - Suggest suitable product
+ - Display recommendation level (1–10)
+ - Show explanation (optional later)
+ - Suggest suitable product
 
-4. **Product Page**
+4. Product Page
 
-   - Product details (name, price, description, image)
-   - Add to cart
+ - Product details (name, price, description, image)
+ - Add to cart
 
-5. **Checkout**
+5. Checkout
 
-   - User login/signup
-   - Address details
-   - Payment via Razorpay
+ - User login/signup
+ - Address details
+ - Payment via Razorpay
 
-6. **Order Confirmation**
+6. Order Confirmation
 
-   - Order summary
-   - Confirmation message
+ - Order summary
+ - Confirmation message
 
 ---
 
