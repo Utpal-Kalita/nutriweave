@@ -29,7 +29,7 @@ A web-based application to help users select and purchase rice based on their nu
 1. Landing Page
 
  - Introduction to product
- - Get Started button
+ - “Get Started” button
 
 2. Preference Selection
 
@@ -38,7 +38,7 @@ A web-based application to help users select and purchase rice based on their nu
 
 3. Recommendation Result
 
- - Display recommendation level (110)
+ - Display recommendation level (1–10)
  - Show explanation (optional later)
  - Suggest suitable product
 
@@ -118,7 +118,7 @@ A web-based application to help users select and purchase rice based on their nu
 
 ## 10. Success Criteria
 
-- User can complete full flow (selection  recommendation  purchase)
+- User can complete full flow (selection → recommendation → purchase)
 - Admin can manage products and orders
 - Payment works reliably
 - System runs smoothly in production
