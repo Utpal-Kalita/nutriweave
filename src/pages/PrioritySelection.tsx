@@ -49,13 +49,20 @@ export default function PrioritySelection() {
   };
 
   return (
-    <div className="flex flex-col min-h-full bg-surface pb-32">
-      <main className="flex-1 px-container pt-8 pb-8 flex flex-col gap-8">
+    <div className="flex flex-col min-h-screen bg-surface">
+      <main className="flex-1 px-5 pt-6 pb-40 flex flex-col gap-8">
+        {/* Progress Header */}
+        <div className="flex items-center gap-2 mb-2">
+          <div className="h-1.5 flex-1 bg-primary rounded-full"></div>
+          <div className="h-1.5 flex-1 bg-surface-container-highest rounded-full"></div>
+          <div className="h-1.5 flex-1 bg-surface-container-highest rounded-full"></div>
+        </div>
+
         {/* Header Section */}
         <div className="flex flex-col gap-2">
-          <h1 className="text-4xl font-bold text-on-surface font-display">Tell us what matters most</h1>
-          <p className="text-lg text-on-surface-variant leading-relaxed">
-            Rate each priority (1 = Low, 3 = High) to help us personalize your nutrition plan.
+          <h1 className="text-3xl font-bold text-on-surface font-display leading-tight">Tell us what matters most</h1>
+          <p className="text-base text-on-surface-variant leading-relaxed">
+            Rate each priority to help our algorithm find your perfect match.
           </p>
         </div>
 
@@ -118,13 +125,13 @@ export default function PrioritySelection() {
       </main>
 
       {/* Fixed Bottom CTA */}
-      <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-surface/90 backdrop-blur-md border-t border-surface-container p-5 z-40">
+      <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/80 backdrop-blur-xl border-t border-surface-container p-6 z-50">
         <button 
           onClick={() => navigate('/match')}
-          className="w-full h-14 bg-primary text-on-primary font-display font-semibold rounded-full shadow-lg active:scale-95 transition-all flex items-center justify-center gap-2"
+          className="w-full h-14 bg-primary text-on-primary font-display font-semibold rounded-full shadow-[0px_8px_20px_rgba(19,85,41,0.25)] active:scale-95 transition-all flex items-center justify-center gap-2"
           id="see-recommended-button"
         >
-          See My Recommended Rice
+          See My Match
           <ArrowRight size={20} />
         </button>
       </div>
