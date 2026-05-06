@@ -9,9 +9,9 @@ export default function Welcome() {
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col h-screen overflow-hidden bg-surface-container-lowest">
+    <div className="flex flex-col min-h-screen bg-surface-container-lowest">
       {/* Top Half: Hero Image */}
-      <div className="relative h-[55%] w-full shrink-0">
+      <div className="relative h-[48vh] w-full shrink-0">
         <img 
           className="w-full h-full object-cover" 
           src={welcomeImage} 
