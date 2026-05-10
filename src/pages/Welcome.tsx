@@ -1,12 +1,20 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Leaf, Sprout, Activity, Dumbbell, Beaker } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
+import { ArrowRight, Leaf, Activity, Dumbbell, Beaker } from 'lucide-react';
 import { motion } from 'motion/react';
-
-const welcomeImage = "https://lh3.googleusercontent.com/aida-public/AB6AXuBRf7I0lpXtooFEH21iA8BtTadC6m9UqPLZ5KoZRgJEuYmoKvYbxitY4nEGaspIdb2vAZUYxQIuwAjhLnz349RWTyP4k13YLV3U4iyb7iaNVOWMDIeyvisUKIsM0YfAyIDmpf3ootbW_BJuZNnPG-X6jzRuyMPnxoF2t7cg09Wwe3gz8venc25_MTuaKMRTNWXXK0LL-Ke3vAXMbVp6lj82CeXpQf2lwbwrKHeb1eK4uxkibEIft_dcykxxVlKn_G1P2Jd5GbiK27Y";
 
 export default function Welcome() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+
+  const handleStart = () => {
+    if (user) {
+      navigate('/priority');
+    } else {
+      navigate('/auth');
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-surface-container-lowest">
@@ -72,7 +80,7 @@ export default function Welcome() {
 
         {/* CTA Action */}
         <button 
-          onClick={() => navigate('/how-it-works')}
+          onClick={handleStart}
           className="w-full h-14 bg-primary text-on-primary rounded-full flex items-center justify-center gap-2 font-display font-semibold shadow-[0px_8px_20px_rgba(47,110,63,0.2)] active:scale-[0.98] transition-all"
           id="get-started-button"
         >

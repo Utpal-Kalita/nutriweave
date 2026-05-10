@@ -1,12 +1,69 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ShoppingBag, MapPin, CreditCard, CheckCircle2, ChevronRight, ArrowRight } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useCart } from '../contexts/CartContext';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
+import { ShoppingBag, MapPin, CreditCard, CheckCircle2, ChevronRight, ArrowRight, Loader2 } from 'lucide-react';
 
 export default function Cart() {
-  const { cart } = useCart();
+  const { cart, clearCart } = useCart();
+  const { user } = useAuth();
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  const handlePlaceOrder = async () => {
+    if (!cart || !user) return;
+    
+    setLoading(true);
+    // Mock payment delay
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    try {
+      const { error } = await supabase.from('orders').insert({
+        user_id: user.id,
+        product_name: cart.name,
+        total_price: cart.price * cart.quantity,
+        quantity: cart.quantity,
+        size: cart.size,
+        status: 'completed',
+        created_at: new Date().toISOString()
+      });
+
+      if (error) throw error;
+      
+      setShowSuccess(true);
+      clearCart();
+    } catch (err) {
+      console.error('Error placing order:', err);
+      alert('Failed to place order. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (showSuccess) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-surface">
+        <motion.div 
+          initial={{ scale: 0.5, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="w-24 h-24 bg-primary rounded-full flex items-center justify-center mb-6 text-white shadow-xl shadow-primary/30"
+        >
+          <CheckCircle2 size={48} />
+        </motion.div>
+        <h2 className="text-3xl font-bold text-on-surface mb-3 font-display">Order Successful!</h2>
+        <p className="text-on-surface-variant mb-10 leading-relaxed">Your personalized Nutrifibe grains are being prepared for dispatch.</p>
+        <button 
+          onClick={() => navigate('/profile')}
+          className="bg-primary text-white px-12 py-4 rounded-full font-bold shadow-lg shadow-primary/20 active:scale-95 transition-all"
+        >
+          View My Orders
+        </button>
+      </div>
+    );
+  }
 
   if (!cart) {
     return (
@@ -17,7 +74,7 @@ export default function Cart() {
         <h2 className="text-2xl font-bold text-on-surface mb-2 font-display">Your cart is empty</h2>
         <p className="text-on-surface-variant mb-8">Start your nutrition journey to see recommendations.</p>
         <button 
-          onClick={() => navigate('/selection')}
+          onClick={() => navigate('/priority')}
           className="bg-primary text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-primary/20"
         >
           Get Started
@@ -102,12 +159,19 @@ export default function Cart() {
       {/* Pay Button Sticky */}
       <div className="fixed bottom-24 left-0 right-0 px-5 max-w-md mx-auto z-40">
         <button 
-          onClick={() => navigate('/profile')}
-          className="w-full bg-primary text-white font-display font-bold h-14 rounded-full shadow-lg shadow-primary/30 flex items-center justify-center gap-2 active:scale-95 transition-all"
+          onClick={handlePlaceOrder}
+          disabled={loading}
+          className="w-full bg-primary text-white font-display font-bold h-14 rounded-full shadow-lg shadow-primary/30 flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-70 disabled:active:scale-100"
           id="pay-now-button"
         >
-          Place Order
-          <ArrowRight size={20} />
+          {loading ? (
+            <Loader2 className="animate-spin" size={24} />
+          ) : (
+            <>
+              Place Order
+              <ArrowRight size={20} />
+            </>
+          )}
         </button>
       </div>
     </div>

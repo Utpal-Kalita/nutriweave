@@ -15,26 +15,31 @@ import Profile from './pages/Profile';
 import NutritionalScale from './pages/NutritionalScale';
 import Cart from './pages/Cart';
 import { CartProvider } from './contexts/CartContext';
+import { AuthProvider } from './contexts/AuthContext';
+import Auth from './pages/Auth';
 
 export default function App() {
   return (
-    <CartProvider>
-      <BrowserRouter>
-        <Layout>
-          <Routes>
-            <Route path="/" element={<Welcome />} />
-            <Route path="/how-it-works" element={<HowItWorks />} />
-            <Route path="/priority" element={<PrioritySelection />} />
-            <Route path="/match" element={<MatchResult />} />
-            <Route path="/scale" element={<NutritionalScale />} />
-            <Route path="/customize" element={<CustomizeOrder />} />
-            <Route path="/cart" element={<Cart />} />
-            <Route path="/impact" element={<Impact />} />
-            <Route path="/profile" element={<Profile />} />
-            <Route path="/order-success" element={<Profile />} />
-          </Routes>
-        </Layout>
-      </BrowserRouter>
-    </CartProvider>
+    <AuthProvider>
+      <CartProvider>
+        <BrowserRouter>
+          <Layout>
+            <Routes>
+              <Route path="/" element={<Welcome />} />
+              <Route path="/auth" element={<Auth />} />
+              <Route path="/how-it-works" element={<HowItWorks />} />
+              <Route path="/priority" element={<PrioritySelection />} />
+              <Route path="/match" element={<MatchResult />} />
+              <Route path="/scale" element={<NutritionalScale />} />
+              <Route path="/customize" element={<CustomizeOrder />} />
+              <Route path="/cart" element={<Cart />} />
+              <Route path="/impact" element={<Impact />} />
+              <Route path="/profile" element={<Profile />} />
+              <Route path="/order-success" element={<Profile />} />
+            </Routes>
+          </Layout>
+        </BrowserRouter>
+      </CartProvider>
+    </AuthProvider>
   );
 }

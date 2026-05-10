@@ -1,10 +1,14 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Wheat, Activity, Dumbbell, ArrowRight } from 'lucide-react';
+import { Wheat, Activity, Dumbbell, ArrowRight, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function PrioritySelection() {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const [loading, setLoading] = useState(false);
   const [priorities, setPriorities] = useState({
     minerals: 2,
     glycemic: 3,
@@ -46,6 +50,26 @@ export default function PrioritySelection() {
 
   const updatePriority = (id: string, val: number) => {
     setPriorities(prev => ({ ...prev, [id]: val }));
+  };
+
+  const handleSaveAndMatch = async () => {
+    if (user) {
+      setLoading(true);
+      try {
+        await supabase.from('profiles').upsert({
+          id: user.id,
+          minerals_priority: priorities.minerals,
+          glycemic_priority: priorities.glycemic,
+          protein_priority: priorities.protein,
+          updated_at: new Date().toISOString()
+        });
+      } catch (err) {
+        console.error('Error saving priorities:', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    navigate('/match');
   };
 
   return (
@@ -127,12 +151,17 @@ export default function PrioritySelection() {
       {/* Fixed Bottom CTA */}
       <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/80 backdrop-blur-xl border-t border-surface-container p-6 z-50">
         <button 
-          onClick={() => navigate('/match')}
-          className="w-full h-14 bg-primary text-on-primary font-display font-semibold rounded-full shadow-[0px_8px_20px_rgba(19,85,41,0.25)] active:scale-95 transition-all flex items-center justify-center gap-2"
+          onClick={handleSaveAndMatch}
+          disabled={loading}
+          className="w-full h-14 bg-primary text-on-primary font-display font-semibold rounded-full shadow-[0px_8px_20px_rgba(19,85,41,0.25)] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-70"
           id="see-recommended-button"
         >
-          See My Match
-          <ArrowRight size={20} />
+          {loading ? <Loader2 className="animate-spin" size={24} /> : (
+            <>
+              See My Match
+              <ArrowRight size={20} />
+            </>
+          )}
         </button>
       </div>
     </div>
