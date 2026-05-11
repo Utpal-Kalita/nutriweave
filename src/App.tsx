@@ -18,26 +18,43 @@ import { CartProvider } from './contexts/CartContext';
 import { AuthProvider } from './contexts/AuthContext';
 import Auth from './pages/Auth';
 
+import { ProtectedRoute } from './components/ProtectedRoute';
+import { AdminRoute } from './components/AdminRoute';
+import AdminLayout from './pages/admin/AdminLayout';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminProducts from './pages/admin/AdminProducts';
+import AdminOrders from './pages/admin/AdminOrders';
+
 export default function App() {
   return (
     <AuthProvider>
       <CartProvider>
         <BrowserRouter>
-          <Layout>
-            <Routes>
+          <Routes>
+            {/* Public Routes with standard Layout */}
+            <Route element={<Layout />}>
               <Route path="/" element={<Welcome />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/how-it-works" element={<HowItWorks />} />
               <Route path="/priority" element={<PrioritySelection />} />
               <Route path="/match" element={<MatchResult />} />
               <Route path="/scale" element={<NutritionalScale />} />
-              <Route path="/customize" element={<CustomizeOrder />} />
-              <Route path="/cart" element={<Cart />} />
-              <Route path="/impact" element={<Impact />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/order-success" element={<Profile />} />
-            </Routes>
-          </Layout>
+              
+              {/* Protected Routes */}
+              <Route path="/customize" element={<ProtectedRoute><CustomizeOrder /></ProtectedRoute>} />
+              <Route path="/cart" element={<ProtectedRoute><Cart /></ProtectedRoute>} />
+              <Route path="/impact" element={<ProtectedRoute><Impact /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path="/order-success" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+            </Route>
+
+            {/* Admin Routes (Hidden) */}
+            <Route path="/admin" element={<AdminRoute><AdminLayout /></AdminRoute>}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="products" element={<AdminProducts />} />
+              <Route path="orders" element={<AdminOrders />} />
+            </Route>
+          </Routes>
         </BrowserRouter>
       </CartProvider>
     </AuthProvider>

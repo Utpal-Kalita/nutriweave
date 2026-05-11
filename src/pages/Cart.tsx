@@ -12,21 +12,37 @@ export default function Cart() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
+  const [address, setAddress] = useState('');
+  const [paymentStatus, setPaymentStatus] = useState<'idle' | 'processing' | 'success'>('idle');
+  const [addressError, setAddressError] = useState(false);
 
   const handlePlaceOrder = async () => {
     if (!cart || !user) return;
     
+    if (address.trim().length < 3) {
+      setAddressError(true);
+      alert("Please enter a valid delivery address before proceeding.");
+      return;
+    }
+    setAddressError(false);
+
     setLoading(true);
-    // Mock payment delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    setPaymentStatus('processing');
+    
+    // Mock payment online delay
+    await new Promise(resolve => setTimeout(resolve, 2500));
+    setPaymentStatus('success');
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     try {
       const { error } = await supabase.from('orders').insert({
         user_id: user.id,
+        product_id: cart.id,
         product_name: cart.name,
         total_price: cart.price * cart.quantity,
         quantity: cart.quantity,
         size: cart.size,
+        frequency: cart.frequency,
         status: 'completed',
         created_at: new Date().toISOString()
       });
@@ -38,6 +54,7 @@ export default function Cart() {
     } catch (err) {
       console.error('Error placing order:', err);
       alert('Failed to place order. Please try again.');
+      setPaymentStatus('idle');
     } finally {
       setLoading(false);
     }
@@ -123,16 +140,26 @@ export default function Cart() {
         </section>
 
         {/* Shipping Address */}
-        <button className="w-full bg-surface-container-lowest rounded-2xl p-5 shadow-sm border border-surface-container-high mb-4 flex items-center gap-4 text-left group transition-all hover:border-primary">
-          <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center text-primary shrink-0">
-            <MapPin size={20} />
+        <div className={`w-full bg-surface-container-lowest rounded-2xl p-5 shadow-sm border mb-4 transition-all ${addressError ? 'border-error ring-1 ring-error' : 'border-surface-container-high focus-within:border-primary focus-within:ring-1 focus-within:ring-primary'}`}>
+          <div className="flex items-center gap-4 text-left mb-3">
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${addressError ? 'bg-error/10 text-error' : 'bg-primary/10 text-primary'}`}>
+              <MapPin size={20} />
+            </div>
+            <div className="flex-1">
+              <h3 className={`font-bold text-sm ${addressError ? 'text-error' : 'text-on-surface'}`}>Delivery Address</h3>
+              {addressError && <p className="text-xs text-error mt-0.5">Please provide a complete address.</p>}
+            </div>
           </div>
-          <div className="flex-1">
-            <h3 className="font-bold text-on-surface text-sm">Shipping Address</h3>
-            <p className="text-xs text-on-surface-variant mt-0.5">24/B Green Valley, Bangalore, KA, 560001</p>
-          </div>
-          <ChevronRight size={20} className="text-outline group-hover:text-primary transition-colors" />
-        </button>
+          <textarea
+            placeholder="Enter your complete delivery address..."
+            value={address}
+            onChange={(e) => {
+              setAddress(e.target.value);
+              if (e.target.value.trim().length >= 10) setAddressError(false);
+            }}
+            className="w-full bg-surface-container-low text-on-surface placeholder:text-on-surface-variant/50 text-sm p-3 rounded-xl border-none outline-none resize-none min-h-[80px]"
+          />
+        </div>
 
         {/* Payment Method */}
         <button className="w-full bg-surface-container-lowest rounded-2xl p-5 shadow-sm border border-surface-container-high mb-4 flex items-center gap-4 text-left group transition-all hover:border-primary">
@@ -140,8 +167,8 @@ export default function Cart() {
             <CreditCard size={20} />
           </div>
           <div className="flex-1">
-            <h3 className="font-bold text-on-surface text-sm">Payment Method</h3>
-            <p className="text-xs text-on-surface-variant mt-0.5">Razorpay • UPI / Card</p>
+            <h3 className="font-bold text-on-surface text-sm">Online Payment</h3>
+            <p className="text-xs text-on-surface-variant mt-0.5">UPI, Cards, Netbanking securely via Razorpay</p>
           </div>
           <ChevronRight size={20} className="text-outline group-hover:text-primary transition-colors" />
         </button>
@@ -156,22 +183,51 @@ export default function Cart() {
         </div>
       </main>
 
+      {/* Payment Processing Modal Overlay */}
+      {paymentStatus !== 'idle' && !showSuccess && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+          <motion.div 
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            className="bg-white rounded-3xl p-8 max-w-sm w-full shadow-2xl flex flex-col items-center text-center"
+          >
+            {paymentStatus === 'processing' ? (
+              <>
+                <div className="relative w-20 h-20 mb-6">
+                  <div className="absolute inset-0 border-4 border-surface-container rounded-full"></div>
+                  <div className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+                  <CreditCard className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-primary" size={28} />
+                </div>
+                <h3 className="text-xl font-bold font-display text-on-surface mb-2">Processing Payment</h3>
+                <p className="text-sm text-on-surface-variant">Connecting securely to payment gateway. Please don't close this window.</p>
+              </>
+            ) : (
+              <>
+                <motion.div 
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center mb-6 text-white"
+                >
+                  <CheckCircle2 size={40} />
+                </motion.div>
+                <h3 className="text-xl font-bold font-display text-on-surface mb-2">Payment Successful!</h3>
+                <p className="text-sm text-on-surface-variant">Your order is being confirmed...</p>
+              </>
+            )}
+          </motion.div>
+        </div>
+      )}
+
       {/* Pay Button Sticky */}
       <div className="fixed bottom-24 left-0 right-0 px-5 max-w-md mx-auto z-40">
         <button 
           onClick={handlePlaceOrder}
-          disabled={loading}
+          disabled={loading || paymentStatus !== 'idle'}
           className="w-full bg-primary text-white font-display font-bold h-14 rounded-full shadow-lg shadow-primary/30 flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-70 disabled:active:scale-100"
           id="pay-now-button"
         >
-          {loading ? (
-            <Loader2 className="animate-spin" size={24} />
-          ) : (
-            <>
-              Place Order
-              <ArrowRight size={20} />
-            </>
-          )}
+          Proceed to Pay
+          <ArrowRight size={20} />
         </button>
       </div>
     </div>

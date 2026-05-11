@@ -52,100 +52,106 @@ export default function Profile() {
 
   if (!user) return null;
 
+  const firstName = user.user_metadata?.full_name?.split(' ')[0] || 'Friend';
+
   return (
-    <div className="flex flex-col min-h-screen bg-surface-container-low px-5 pt-8 pb-32">
+    <div className="flex flex-col min-h-screen bg-surface px-5 pt-8 pb-32 w-full">
       {/* Hero Greeting */}
-      <section className="flex items-center justify-between mb-10">
+      <section className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-4xl font-bold text-on-surface font-display tracking-tight">
-            Hello, {user.user_metadata?.full_name || 'Friend'}
-          </h1>
-          <p className="text-base text-on-surface-variant mt-1">Welcome back to your nutrition hub.</p>
+          <h1 className="font-display text-3xl font-bold text-on-surface">Hello, {firstName}</h1>
+          <p className="text-sm text-on-surface-variant mt-1">Welcome back to your nutrition hub.</p>
         </div>
-        <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-primary shadow-lg ring-4 ring-primary/10">
-          <img src={avatarImage} alt="Profile" className="w-full h-full object-cover" />
+        <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-primary-container shadow-sm shrink-0">
+          <img src={avatarImage} alt="Profile picture" className="w-full h-full object-cover" />
         </div>
       </section>
 
       {/* Bento Grid Dashboard */}
-      <section className="flex flex-col gap-5">
-        {/* Account Details Card */}
-        <motion.div initial={{ x: -20, opacity: 0 }} animate={{ x: 0, opacity: 1 }} className="bg-white rounded-3xl p-6 shadow-[0px_4px_20px_rgba(0,0,0,0.03)] flex flex-col gap-4 border border-surface-container-high">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container">
-                <User size={20} />
-              </div>
-              <div>
-                <h3 className="text-xl font-bold text-on-surface font-display">Account</h3>
-                <p className="text-sm text-on-surface-variant truncate max-w-[180px]">{user.email}</p>
-              </div>
+      <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Profile Overview Card */}
+        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-surface-container-lowest rounded-[20px] p-4 shadow-[0px_6px_20px_rgba(0,0,0,0.04)] flex flex-col gap-3 border border-surface-container-high/50">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container shrink-0">
+              <User size={20} />
             </div>
-            <button 
-              onClick={handleLogout}
-              className="w-10 h-10 rounded-full bg-error-container/10 text-error flex items-center justify-center border border-error/10 hover:bg-error-container hover:text-white transition-all active:scale-95"
-            >
-              <LogOut size={18} />
+            <div className="flex-1 overflow-hidden">
+              <h3 className="font-display text-lg font-semibold text-on-surface">Account Details</h3>
+              <p className="text-sm text-on-surface-variant truncate">{user.email}</p>
+            </div>
+          </div>
+          <div className="mt-2 border-t border-surface-variant pt-3 flex justify-between items-center">
+            <div>
+              <span className="text-xs tracking-wider font-bold text-on-surface-variant uppercase">Status</span>
+              <p className="text-base text-primary font-semibold">NutriPlus Member</p>
+            </div>
+            <button onClick={handleLogout} className="flex items-center gap-1.5 text-sm font-semibold text-error hover:text-error-container active:scale-95 transition-all">
+              <LogOut size={16} />
+              Logout
             </button>
           </div>
         </motion.div>
 
-        {/* Recent Orders */}
-        <motion.div 
-           initial={{ y: 20, opacity: 0 }} 
-           animate={{ y: 0, opacity: 1 }} 
-           transition={{ delay: 0.1 }} 
-           className="bg-white rounded-3xl p-6 shadow-[0px_4px_20px_rgba(0,0,0,0.03)] flex flex-col gap-6 border border-surface-container-high"
-        >
-          <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-bold text-on-surface font-display">Orders</h2>
-            <div className="bg-primary/10 text-primary text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
-              {orders.length} Total
+        {/* Preferences Card */}
+        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }} className="bg-surface-container-lowest rounded-[20px] p-4 shadow-[0px_6px_20px_rgba(0,0,0,0.04)] flex flex-col gap-3 border border-surface-container-high/50">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-tertiary-container flex items-center justify-center text-on-tertiary-container shrink-0">
+              <Sliders size={20} />
             </div>
+            <h3 className="font-display text-lg font-semibold text-on-surface">Dietary Preferences</h3>
           </div>
+          <div className="flex flex-wrap gap-2 mt-1">
+            <span className="bg-secondary-container/30 text-on-surface px-3 py-1 rounded-full text-xs font-bold">Vegan</span>
+            <span className="bg-secondary-container/30 text-on-surface px-3 py-1 rounded-full text-xs font-bold">Gluten-Free</span>
+            <span className="bg-secondary-container/30 text-on-surface px-3 py-1 rounded-full text-xs font-bold">Low Sodium</span>
+          </div>
+          <div className="mt-auto border-t border-surface-variant pt-3">
+            <button className="w-full flex justify-between items-center text-on-surface-variant hover:text-primary transition-colors">
+              <span className="text-sm font-medium">Manage all settings</span>
+              <ChevronRight size={20} />
+            </button>
+          </div>
+        </motion.div>
 
-          <div className="flex flex-col gap-4">
+        {/* Recent Orders List (Full Width) */}
+        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }} className="col-span-1 md:col-span-2 bg-surface-container-lowest rounded-[20px] p-5 shadow-[0px_6px_20px_rgba(0,0,0,0.04)] flex flex-col gap-4 border border-surface-container-high/50">
+          <div className="flex justify-between items-end">
+            <h2 className="font-display text-xl font-bold text-on-surface">Recent Orders</h2>
+            <button className="text-sm text-primary font-semibold hover:underline">View All</button>
+          </div>
+          
+          <div className="flex flex-col gap-3">
             {loading ? (
-              <div className="flex flex-col items-center justify-center py-12 text-outline gap-3">
-                <Loader2 className="animate-spin" size={32} />
-                <p className="text-sm">Fetching your history...</p>
+              <div className="flex justify-center p-8">
+                <Loader2 className="animate-spin text-primary" size={24} />
               </div>
             ) : orders.length > 0 ? (
-              orders.map((order) => (
-                <div key={order.id} className="flex items-center justify-between p-4 rounded-2xl border border-surface-container-high hover:border-primary/20 transition-all bg-surface/50 group">
+              orders.map((order, index) => (
+                <div key={order.id} className="flex items-center justify-between p-3 rounded-xl border border-surface-variant hover:border-primary-container transition-colors">
                   <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-xl overflow-hidden bg-surface-container shrink-0 border border-surface-container-high shadow-inner">
+                    <div className="w-16 h-16 rounded-lg overflow-hidden bg-surface-container shrink-0">
                       <img src={riceImg} alt={order.product_name} className="w-full h-full object-cover" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-on-surface text-sm">{order.product_name}</h4>
+                      <h4 className="text-sm font-semibold text-on-surface">{order.product_name}</h4>
                       <p className="text-xs text-on-surface-variant mt-1">
-                        {new Date(order.created_at).toLocaleDateString()} • ₹{order.total_price}
+                        {order.status === 'completed' ? 'Delivered' : 'Pending'} • {new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </p>
-                      <div className="mt-2 inline-flex items-center gap-1.5 bg-emerald-50 text-emerald-700 text-[10px] font-bold px-2 py-0.5 rounded-md uppercase tracking-wider border border-emerald-100">
-                        <div className="w-1 h-1 rounded-full bg-emerald-700"></div>
-                        {order.status}
-                      </div>
                     </div>
                   </div>
-                  <button className="bg-primary text-white p-3 rounded-full hover:bg-primary-container active:scale-90 transition-all shadow-md shadow-primary/20">
-                    <RotateCcw size={18} />
+                  <button className={`hidden sm:flex text-sm px-4 py-2 rounded-full font-semibold active:scale-95 transition-all flex items-center gap-1.5 shadow-sm ${index === 0 ? 'bg-primary text-white hover:bg-primary-container' : 'bg-surface text-primary border border-primary hover:bg-secondary-container'}`}>
+                    <RotateCcw size={16} />
+                    <span>Reorder</span>
+                  </button>
+                  <button className="sm:hidden text-primary p-2 hover:bg-surface-container rounded-full transition-colors">
+                    <RotateCcw size={20} />
                   </button>
                 </div>
               ))
             ) : (
-              <div className="flex flex-col items-center justify-center py-12 text-outline gap-4 border-2 border-dashed border-surface-container-high rounded-3xl">
-                <Package size={48} className="opacity-20" />
-                <div className="text-center">
-                  <p className="font-bold text-on-surface">No orders yet</p>
-                  <p className="text-xs mt-1">Your nutrition journey begins with your first order.</p>
-                </div>
-                <button 
-                  onClick={() => navigate('/priority')}
-                  className="mt-2 text-sm font-bold text-primary hover:underline"
-                >
-                  Find My Match
-                </button>
+              <div className="text-center p-8 border border-dashed border-surface-variant rounded-xl">
+                <Package className="mx-auto text-surface-variant mb-2" size={32} />
+                <p className="text-sm text-on-surface-variant font-medium">No orders yet</p>
               </div>
             )}
           </div>

@@ -4,6 +4,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { ArrowRight, Leaf, Activity, Dumbbell, Beaker } from 'lucide-react';
 import { motion } from 'motion/react';
 
+const welcomeImage = "https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=2070&auto=format&fit=crop";
+
 export default function Welcome() {
   const navigate = useNavigate();
   const { user } = useAuth();

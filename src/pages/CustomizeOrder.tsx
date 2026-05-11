@@ -1,10 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check, Verified, ShoppingCart, Minus, Plus } from 'lucide-react';
+import { ArrowLeft, Check, Verified, ShoppingCart, Minus, Plus, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useCart } from '../contexts/CartContext';
+import { supabase } from '../lib/supabase';
 
-const riceImage = "https://lh3.googleusercontent.com/aida-public/AB6AXuDOKYVkSAThdFox_Rm6aKWzQfZdJamvPRq3Yp-YTKk2s944tiAqESoA4W3fcqfLFpnpvWevRWe2frVhwID9eYv0UE7xzbNn6PabpAWXNiWnFgFXBF6TFKIFHgmCeqK3q9Hs1q2JfJpNq3zt6Cy-gXjiK97iBFJYxTIjlETl8YXXbDOgIAT3gN6cOaK_9Iq6VjC-ZdddXc9iPEyJ-QGmHFXb2BBFMV38IZ05v0Sq53VZwVoduuHEaDQhoMKGctq6UpU-FcBxQEpuEFg";
+interface Product {
+  id: string;
+  name: string;
+  description: string;
+  price: number;
+  image_url: string;
+  level: number;
+}
 
 export default function CustomizeOrder() {
   const navigate = useNavigate();
@@ -12,18 +20,60 @@ export default function CustomizeOrder() {
   const [packSize, setPackSize] = useState('5 kg');
   const [quantity, setQuantity] = useState(1);
   const [frequency, setFrequency] = useState('one-time');
+  
+  const [product, setProduct] = useState<Product | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProduct = async () => {
+      // Fetch level 5 product for now, or just the first product
+      const { data, error } = await supabase
+        .from('products')
+        .select('*')
+        .order('level', { ascending: false })
+        .limit(1)
+        .single();
+        
+      if (!error && data) {
+        setProduct(data);
+      }
+      setLoading(false);
+    };
+    
+    fetchProduct();
+  }, []);
 
   const handleAddToCart = () => {
+    if (!product) return;
+    
     addToCart({
-      name: 'Premium Sona Masuri',
-      price: 249,
+      id: product.id,
+      name: product.name,
+      price: product.price,
       quantity,
       size: packSize,
       frequency,
-      level: 5
+      level: product.level
     });
     navigate('/cart');
   };
+
+  if (loading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-surface">
+        <Loader2 className="animate-spin text-primary" size={48} />
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="flex flex-col h-screen w-full items-center justify-center bg-surface">
+        <p className="text-on-surface-variant font-bold mb-4">No products found</p>
+        <button onClick={() => navigate('/priority')} className="text-primary hover:underline">Go Back</button>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col min-h-full bg-surface pb-44">
@@ -37,14 +87,14 @@ export default function CustomizeOrder() {
           >
             <div className="absolute top-4 left-4 z-10 bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm border border-secondary-fixed/50 backdrop-blur-sm">
               <Verified size={14} fill="currentColor" />
-              Level 5
+              Level {product.level}
             </div>
             <div className="aspect-[4/3] w-full bg-surface-container overflow-hidden">
-              <img src={riceImage} alt="Premium Rice" className="w-full h-full object-cover" />
+              <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
             </div>
             <div className="p-5">
-              <h2 className="text-2xl font-bold text-on-surface mb-1 font-display">Premium Sona Masuri</h2>
-              <p className="text-sm text-on-surface-variant font-sans">Aged 12 months for perfect texture. Ideal for daily consumption.</p>
+              <h2 className="text-2xl font-bold text-on-surface mb-1 font-display">{product.name}</h2>
+              <p className="text-sm text-on-surface-variant font-sans">{product.description}</p>
             </div>
           </motion.div>
         </section>
@@ -158,7 +208,7 @@ export default function CustomizeOrder() {
         <div className="flex items-center justify-between gap-6">
           <div className="flex flex-col">
             <span className="text-xs text-on-surface-variant font-medium">Total Price</span>
-            <span className="text-2xl font-bold text-on-surface">₹{249 * quantity}</span>
+            <span className="text-2xl font-bold text-on-surface">₹{product.price * quantity}</span>
           </div>
           <button 
             onClick={handleAddToCart}

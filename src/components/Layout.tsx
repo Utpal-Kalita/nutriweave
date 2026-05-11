@@ -1,13 +1,9 @@
 import React from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { ArrowLeft, Home, ShoppingBasket, BarChart2, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
-interface LayoutProps {
-  children: React.ReactNode;
-}
-
-export default function Layout({ children }: LayoutProps) {
+export default function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
   const path = location.pathname;
@@ -77,7 +73,7 @@ export default function Layout({ children }: LayoutProps) {
             transition={{ duration: 0.2 }}
             className="flex-1 flex flex-col"
           >
-            {children}
+            <Outlet />
           </motion.div>
         </AnimatePresence>
       </main>
