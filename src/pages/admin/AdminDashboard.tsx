@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
-import { Package, ShoppingBag, Users } from 'lucide-react';
+import { getDemoOrders, getDemoProducts } from '../../lib/demoStore';
+import { Package, ShoppingBag } from 'lucide-react';
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({
@@ -10,20 +10,14 @@ export default function AdminDashboard() {
   });
 
   useEffect(() => {
-    const fetchStats = async () => {
-      const { count: ordersCount, data: orders } = await supabase
-        .from('orders')
-        .select('total_price', { count: 'exact' });
-
-      const { count: productsCount } = await supabase
-        .from('products')
-        .select('*', { count: 'exact', head: true });
-
-      const revenue = orders?.reduce((sum, order) => sum + (order.total_price || 0), 0) || 0;
+    const fetchStats = () => {
+      const orders = getDemoOrders();
+      const products = getDemoProducts();
+      const revenue = orders.reduce((sum, order) => sum + (order.total_price || 0), 0);
 
       setStats({
-        totalOrders: ordersCount || 0,
-        totalProducts: productsCount || 0,
+        totalOrders: orders.length,
+        totalProducts: products.length,
         totalRevenue: revenue,
       });
     };

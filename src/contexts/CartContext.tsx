@@ -17,16 +17,30 @@ interface CartContextType {
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
+const CART_KEY = 'nutriweave:demo-cart';
+
+function readSavedCart() {
+  if (typeof window === 'undefined') return null;
+
+  try {
+    const raw = window.localStorage.getItem(CART_KEY);
+    return raw ? (JSON.parse(raw) as CartItem) : null;
+  } catch {
+    return null;
+  }
+}
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [cart, setCart] = useState<CartItem | null>(null);
+  const [cart, setCart] = useState<CartItem | null>(() => readSavedCart());
 
   const addToCart = (item: CartItem) => {
     setCart(item);
+    window.localStorage.setItem(CART_KEY, JSON.stringify(item));
   };
 
   const clearCart = () => {
     setCart(null);
+    window.localStorage.removeItem(CART_KEY);
   };
 
   return (

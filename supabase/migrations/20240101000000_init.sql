@@ -7,7 +7,12 @@ CREATE TABLE public.profiles (
   role user_role DEFAULT 'user'::user_role,
   full_name TEXT,
   avatar_url TEXT,
-  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
+  minerals_priority INTEGER DEFAULT 2,
+  glycemic_priority INTEGER DEFAULT 2,
+  protein_priority INTEGER DEFAULT 2,
+  matched_level INTEGER DEFAULT 5,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );
 
 -- Enable RLS for profiles
@@ -113,6 +118,13 @@ CREATE TRIGGER on_auth_user_created
 
 -- Insert dummy product data
 INSERT INTO public.products (name, description, price, image_url, level) VALUES
-('Premium Sona Masuri', 'Aged 12 months for perfect texture. Ideal for daily consumption.', 249, 'https://lh3.googleusercontent.com/aida-public/AB6AXuDOKYVkSAThdFox_Rm6aKWzQfZdJamvPRq3Yp-YTKk2s944tiAqESoA4W3fcqfLFpnpvWevRWe2frVhwID9eYv0UE7xzbNn6PabpAWXNiWnFgFXBF6TFKIFHgmCeqK3q9Hs1q2JfJpNq3zt6Cy-gXjiK97iBFJYxTIjlETl8YXXbDOgIAT3gN6cOaK_9Iq6VjC-ZdddXc9iPEyJ-QGmHFXb2BBFMV38IZ05v0Sq53VZwVoduuHEaDQhoMKGctq6UpU-FcBxQEpuEFg', 5),
+('Super Mineral Blend', 'Maximum nutrient density. Fortified with essential minerals.', 499, 'https://lh3.googleusercontent.com/aida-public/AB6AXuDOKYVkSAThdFox_Rm6aKWzQfZdJamvPRq3Yp-YTKk2s944tiAqESoA4W3fcqfLFpnpvWevRWe2frVhwID9eYv0UE7xzbNn6PabpAWXNiWnFgFXBF6TFKIFHgmCeqK3q9Hs1q2JfJpNq3zt6Cy-gXjiK97iBFJYxTIjlETl8YXXbDOgIAT3gN6cOaK_9Iq6VjC-ZdddXc9iPEyJ-QGmHFXb2BBFMV38IZ05v0Sq53VZwVoduuHEaDQhoMKGctq6UpU-FcBxQEpuEFg', 1),
+('Keto Pro Mix', 'Highest protein content with zero carb impact.', 550, 'https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=2070&auto=format&fit=crop', 2),
+('Quinoa Blend', 'Protein-rich blend for active lifestyles.', 450, 'https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=2070&auto=format&fit=crop', 3),
 ('Brown Basmati Match', 'High fiber, low GI rice perfect for sustained energy.', 320, 'https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=2070&auto=format&fit=crop', 4),
-('Quinoa Blend', 'Protein-rich blend for active lifestyles.', 450, 'https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=2070&auto=format&fit=crop', 3);
+('Premium Sona Masuri', 'Aged 12 months for perfect texture. Ideal for daily consumption.', 249, 'https://lh3.googleusercontent.com/aida-public/AB6AXuDOKYVkSAThdFox_Rm6aKWzQfZdJamvPRq3Yp-YTKk2s944tiAqESoA4W3fcqfLFpnpvWevRWe2frVhwID9eYv0UE7xzbNn6PabpAWXNiWnFgFXBF6TFKIFHgmCeqK3q9Hs1q2JfJpNq3zt6Cy-gXjiK97iBFJYxTIjlETl8YXXbDOgIAT3gN6cOaK_9Iq6VjC-ZdddXc9iPEyJ-QGmHFXb2BBFMV38IZ05v0Sq53VZwVoduuHEaDQhoMKGctq6UpU-FcBxQEpuEFg', 5),
+('Smart Jasmine', 'Classic taste with added fiber and lower glycemic index.', 280, 'https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=2070&auto=format&fit=crop', 6),
+('Daily White Plus', 'Traditional white rice with micronutrient coating.', 199, 'https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=2070&auto=format&fit=crop', 7),
+('Classic Polished Rice', 'Maximum fluffiness and traditional aroma.', 150, 'https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=2070&auto=format&fit=crop', 8),
+('Gourmet Sticky Rice', 'Perfect for special dishes and emotional comfort.', 220, 'https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=2070&auto=format&fit=crop', 9),
+('Celebration Basmati', 'Extra long grain for feast days and pure indulgence.', 350, 'https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=2070&auto=format&fit=crop', 10);

@@ -1,17 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import { DemoProduct, getDemoProducts } from '../../lib/demoStore';
 import { Loader2, Plus, Edit2, Trash2 } from 'lucide-react';
 
-interface Product {
-  id: string;
-  name: string;
-  price: number;
-  level: number;
-  description: string;
-}
-
 export default function AdminProducts() {
-  const [products, setProducts] = useState<Product[]>([]);
+  const [products, setProducts] = useState<DemoProduct[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,14 +12,7 @@ export default function AdminProducts() {
 
   const fetchProducts = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('products')
-      .select('*')
-      .order('level', { ascending: true });
-      
-    if (!error && data) {
-      setProducts(data);
-    }
+    setProducts(getDemoProducts().sort((a, b) => a.level - b.level));
     setLoading(false);
   };
 

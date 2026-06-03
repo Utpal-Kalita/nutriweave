@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { supabase } from '../lib/supabase';
 import { motion, AnimatePresence } from 'motion/react';
 import { Mail, Lock, Loader2, ArrowRight, Github } from 'lucide-react';
+import { useAuth } from '../contexts/AuthContext';
 
 export default function Auth() {
   const [email, setEmail] = useState('');
@@ -11,29 +11,19 @@ export default function Auth() {
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { signIn } = useAuth();
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    const { error } = mode === 'login' 
-      ? await supabase.auth.signInWithPassword({ email, password })
-      : await supabase.auth.signUp({ 
-          email, 
-          password,
-          options: {
-            data: {
-              full_name: email.split('@')[0],
-            }
-          }
-        });
-
-    if (error) {
-      setError(error.message);
-      setLoading(false);
-    } else {
+    try {
+      await signIn(email, password);
       navigate('/priority');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Demo login failed');
+      setLoading(false);
     }
   };
 
@@ -53,8 +43,8 @@ export default function Auth() {
           </h1>
           <p className="text-on-surface-variant">
             {mode === 'login' 
-              ? 'Sign in to access your personalized nutrition plan' 
-              : 'Join Nutrifibe for a healthier lifestyle'}
+              ? 'Enter any email and password to start the client demo' 
+              : 'Any email and password creates a browser-only demo account'}
           </p>
         </motion.div>
 
@@ -64,6 +54,7 @@ export default function Auth() {
             <input
               type="email"
               placeholder="Email address"
+              autoComplete="username"
               className="w-full bg-white border border-surface-container-high rounded-2xl h-14 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -75,6 +66,7 @@ export default function Auth() {
             <input
               type="password"
               placeholder="Password"
+              autoComplete="current-password"
               className="w-full bg-white border border-surface-container-high rounded-2xl h-14 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
@@ -118,9 +110,17 @@ export default function Auth() {
         </div>
 
         <div className="mt-6">
-          <button className="w-full bg-white border border-surface-container-high text-on-surface h-14 rounded-full flex items-center justify-center gap-3 hover:bg-surface-container-low transition-colors active:scale-[0.98]">
+          <button
+            type="button"
+            onClick={async () => {
+              setLoading(true);
+              await signIn(email || 'demo@nutrifibe.local', password || 'demo');
+              navigate('/priority');
+            }}
+            className="w-full bg-white border border-surface-container-high text-on-surface h-14 rounded-full flex items-center justify-center gap-3 hover:bg-surface-container-low transition-colors active:scale-[0.98]"
+          >
              <Github size={20} />
-             <span className="font-bold">GitHub</span>
+             <span className="font-bold">Demo Login</span>
           </button>
         </div>
 

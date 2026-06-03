@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Wheat, Activity, Dumbbell, ArrowRight, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { ensureDemoProfile, saveDemoProfile } from '../lib/demoStore';
 
 export default function PrioritySelection() {
   const navigate = useNavigate();
@@ -56,11 +56,20 @@ export default function PrioritySelection() {
     if (user) {
       setLoading(true);
       try {
-        await supabase.from('profiles').upsert({
+        const sum = priorities.minerals + priorities.glycemic + priorities.protein;
+        // Map sum [3, 9] to level [10, 1]
+        const matchedLevel = Math.max(1, Math.min(10, Math.round(10 - (sum - 3) * 1.5)));
+
+        const profile = ensureDemoProfile(user);
+        saveDemoProfile({
+          ...profile,
           id: user.id,
+          email: user.email,
+          full_name: user.user_metadata.full_name,
           minerals_priority: priorities.minerals,
           glycemic_priority: priorities.glycemic,
           protein_priority: priorities.protein,
+          matched_level: matchedLevel,
           updated_at: new Date().toISOString()
         });
       } catch (err) {

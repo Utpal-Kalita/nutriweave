@@ -2,25 +2,16 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Sliders, ChevronRight, RotateCcw, LogOut, Package, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { supabase } from '../lib/supabase';
 import { useAuth } from '../contexts/AuthContext';
+import { DemoOrder, getDemoOrdersForUser } from '../lib/demoStore';
 
 const avatarImage = "https://lh3.googleusercontent.com/aida-public/AB6AXuC1jP0cW1YMNjiBTHcML_eyhiht1z7-2t-9oS4kMDogRMdIbGMu0-sQKSDu2qsIIwCy1AcWUgMZ9z4G0CwZGH86QeVKgS-c_wc9XSqzn-2WfMdJZyZCjBPaWYVGN7zEaGJ6IJ-r4yV13z2U_f20-WMLAElhUA1IZxXyMD917vjtRdiPLC4AULh8I8Pw5Pvxs75CnCR8IYKRsFXVe72r6-I5io43u-vPh5i5daFcxkJxMjaciQJIWCEEApeM3r40vQtG7_cY5eHkmU0";
 const riceImg = "https://lh3.googleusercontent.com/aida-public/AB6AXuDOKYVkSAThdFox_Rm6aKWzQfZdJamvPRq3Yp-YTKk2s944tiAqESoA4W3fcqfLFpnpvWevRWe2frVhwID9eYv0UE7xzbNn6PabpAWXNiWnFgFXBF6TFKIFHgmCeqK3q9Hs1q2JfJpNq3zt6Cy-gXjiK97iBFJYxTIjlETl8YXXbDOgIAT3gN6cOaK_9Iq6VjC-ZdddXc9iPEyJ-QGmHFXb2BBFMV38IZ05v0Sq53VZwVoduuHEaDQhoMKGctq6UpU-FcBxQEpuEFg";
 
-interface Order {
-  id: string;
-  product_name: string;
-  total_price: number;
-  quantity: number;
-  status: string;
-  created_at: string;
-}
-
 export default function Profile() {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<DemoOrder[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -29,16 +20,8 @@ export default function Profile() {
       return;
     }
 
-    const fetchOrders = async () => {
-      const { data, error } = await supabase
-        .from('orders')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-
-      if (!error && data) {
-        setOrders(data);
-      }
+    const fetchOrders = () => {
+      setOrders(getDemoOrdersForUser(user.id));
       setLoading(false);
     };
 

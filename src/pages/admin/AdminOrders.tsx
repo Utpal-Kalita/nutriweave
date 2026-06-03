@@ -1,23 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { supabase } from '../../lib/supabase';
+import { DemoOrder, getDemoOrders, updateDemoOrderStatus } from '../../lib/demoStore';
 import { Loader2 } from 'lucide-react';
 
-interface Order {
-  id: string;
-  user_id: string;
-  product_name: string;
-  total_price: number;
-  quantity: number;
-  status: string;
-  created_at: string;
-  profiles?: {
-    full_name: string;
-    email?: string;
-  };
-}
-
 export default function AdminOrders() {
-  const [orders, setOrders] = useState<Order[]>([]);
+  const [orders, setOrders] = useState<DemoOrder[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -26,24 +12,12 @@ export default function AdminOrders() {
 
   const fetchOrders = async () => {
     setLoading(true);
-    const { data, error } = await supabase
-      .from('orders')
-      .select(`
-        *,
-        profiles (
-          full_name
-        )
-      `)
-      .order('created_at', { ascending: false });
-      
-    if (!error && data) {
-      setOrders(data as any);
-    }
+    setOrders(getDemoOrders().sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at)));
     setLoading(false);
   };
 
   const updateStatus = async (id: string, newStatus: string) => {
-    await supabase.from('orders').update({ status: newStatus }).eq('id', id);
+    updateDemoOrderStatus(id, newStatus);
     fetchOrders();
   };
 

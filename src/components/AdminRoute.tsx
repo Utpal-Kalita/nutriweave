@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { supabase } from '../lib/supabase';
+import { ensureDemoProfile, getDemoProfile } from '../lib/demoStore';
 import { Loader2 } from 'lucide-react';
 
 export function AdminRoute({ children }: { children: React.ReactNode }) {
@@ -12,18 +12,9 @@ export function AdminRoute({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (user) {
-      const checkRole = async () => {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('role')
-          .eq('id', user.id)
-          .single();
-        
-        if (!error && data && data.role === 'admin') {
-          setIsAdmin(true);
-        } else {
-          setIsAdmin(false);
-        }
+      const checkRole = () => {
+        const profile = getDemoProfile(user.id) || ensureDemoProfile(user);
+        setIsAdmin(profile.role === 'admin');
         setCheckingRole(false);
       };
       checkRole();

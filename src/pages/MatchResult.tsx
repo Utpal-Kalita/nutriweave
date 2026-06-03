@@ -1,19 +1,64 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Leaf } from 'lucide-react';
+import { ArrowRight, Loader2, Sparkles } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useAuth } from '../contexts/AuthContext';
+import { getNutritionalRoadmap } from '../lib/gemini';
+import { ensureDemoProfile, getDemoProfile } from '../lib/demoStore';
 
 export default function MatchResult() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [needleRotation, setNeedleRotation] = useState(-90);
+  const [level, setLevel] = useState<number | null>(null);
+  const [roadmap, setRoadmap] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [roadmapLoading, setRoadmapLoading] = useState(false);
 
   useEffect(() => {
-    // Animate needle to "Level 5" (center: 0 degrees)
-    const timer = setTimeout(() => {
-      setNeedleRotation(0);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, []);
+    const fetchResult = async () => {
+      if (user) {
+        const data = getDemoProfile(user.id) || ensureDemoProfile(user);
+        
+        if (data?.matched_level) {
+          setLevel(data.matched_level);
+          // Animate needle: Level 1 is -90, Level 10 is 90
+          setTimeout(() => {
+            setNeedleRotation((data.matched_level - 5.5) * 20);
+          }, 500);
+
+          // Generate AI roadmap
+          setRoadmapLoading(true);
+          const aiRoadmap = await getNutritionalRoadmap({
+            minerals: data.minerals_priority,
+            glycemic: data.glycemic_priority,
+            protein: data.protein_priority
+          }, data.matched_level);
+          setRoadmap(aiRoadmap);
+          setRoadmapLoading(false);
+        }
+      }
+      setLoading(false);
+    };
+
+    fetchResult();
+  }, [user]);
+
+  if (loading) {
+    return (
+      <div className="flex h-screen w-full items-center justify-center bg-surface">
+        <Loader2 className="animate-spin text-primary" size={48} />
+      </div>
+    );
+  }
+
+  const levelInfo = {
+    title: level && level <= 3 ? 'Nutrient Max' : level && level <= 5 ? 'Balanced Core' : level && level <= 7 ? 'Smart Comfort' : 'Pure Comfort',
+    description: level && level <= 3 ? 'Your profile demands the highest concentration of functional nutrients for peak performance.' :
+                 level && level <= 5 ? 'Your metabolism thrives on a steady intake of complex carbohydrates and balanced proteins.' :
+                 level && level <= 7 ? 'You prefer a familiar taste profile with enhanced nutritional benefits for daily wellness.' :
+                 'Your focus is on traditional textures and flavors, optimized for mindful enjoyment.'
+  };
 
   return (
     <div className="flex flex-col min-h-full bg-background items-center px-5 pt-8 pb-32">
@@ -38,6 +83,7 @@ export default function MatchResult() {
         {/* Gauge Visual */}
         <div className="relative w-full aspect-[2/1.1] flex items-end justify-center mb-6">
           <svg className="w-full h-full drop-shadow-sm" viewBox="0 0 100 50">
+            {/* ... same SVG defs and paths ... */}
             <defs>
               <linearGradient id="grad1" x1="0%" x2="100%" y1="0%" y2="0%">
                 <stop offset="0%" stopColor="#135529" />
@@ -56,19 +102,12 @@ export default function MatchResult() {
                 <stop offset="100%" stopColor="#ea580c" />
               </linearGradient>
             </defs>
-            {/* Background Arc */}
             <path d="M 10 45 A 40 40 0 0 1 90 45" fill="none" stroke="#f1f5f9" strokeLinecap="round" strokeWidth="10" />
-            
-            {/* Dark Green */}
             <path d="M 10 45 A 40 40 0 0 1 30 10.4" fill="none" stroke="url(#grad1)" strokeLinecap="round" strokeWidth="10" />
-            {/* Green */}
             <path d="M 30 10.4 A 40 40 0 0 1 50 5" fill="none" stroke="url(#grad2)" strokeLinecap="round" strokeWidth="10" />
-            {/* Yellow */}
             <path d="M 50 5 A 40 40 0 0 1 70 10.4" fill="none" stroke="url(#grad3)" strokeLinecap="round" strokeWidth="10" />
-            {/* Orange */}
             <path d="M 70 10.4 A 40 40 0 0 1 90 45" fill="none" stroke="url(#grad4)" strokeLinecap="round" strokeWidth="10" />
 
-            {/* Indicator Pointer */}
             <g 
               style={{ transform: `rotate(${needleRotation}deg)`, transformOrigin: '50px 45px' }}
               className="transition-transform duration-[1500ms] cubic-bezier(0.34, 1.56, 0.64, 1)"
@@ -79,17 +118,34 @@ export default function MatchResult() {
             </g>
           </svg>
           
-          {/* Center Text */}
           <div className="absolute bottom-0 inset-x-0 flex flex-col items-center pb-2">
             <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] font-sans">Level</span>
-            <span className="text-4xl font-extrabold text-primary tracking-tight leading-tight font-display">5</span>
+            <span className="text-4xl font-extrabold text-primary tracking-tight leading-tight font-display">{level || '5'}</span>
           </div>
         </div>
 
-        <h2 className="text-2xl font-bold text-on-surface mb-2 font-display">Balanced Core</h2>
-        <p className="text-base text-on-surface-variant text-center mb-8 font-sans">
-          Your metabolism thrives on a steady intake of complex carbohydrates and balanced proteins.
+        <h2 className="text-2xl font-bold text-on-surface mb-2 font-display">{levelInfo.title}</h2>
+        <p className="text-base text-on-surface-variant text-center mb-8 font-sans px-4">
+          {levelInfo.description}
         </p>
+
+        {/* AI Roadmap Card */}
+        <div className="w-full bg-primary/5 rounded-2xl p-5 border border-primary/10 mb-6 text-left">
+          <div className="flex items-center gap-2 mb-3 text-primary">
+            <Sparkles size={18} fill="currentColor" />
+            <h3 className="font-bold text-sm uppercase tracking-wider">AI Nutritional Roadmap</h3>
+          </div>
+          {roadmapLoading ? (
+            <div className="flex items-center gap-3 text-on-surface-variant text-sm">
+              <Loader2 size={16} className="animate-spin" />
+              Generating your personalized insights...
+            </div>
+          ) : (
+            <div className="text-sm text-on-surface leading-relaxed whitespace-pre-wrap italic">
+              {roadmap || "Your personalized roadmap is being prepared. Enjoy your balanced match!"}
+            </div>
+          )}
+        </div>
 
         {/* Tags */}
         <div className="flex flex-wrap justify-center gap-2 w-full mb-6">

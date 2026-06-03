@@ -1,12 +1,48 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useNavigate, useLocation, Outlet } from 'react-router-dom';
 import { ArrowLeft, Home, ShoppingBasket, BarChart2, User } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
+import Lenis from 'lenis';
+import gsap from 'gsap';
 
 export default function Layout() {
   const navigate = useNavigate();
   const location = useLocation();
   const path = location.pathname;
+  const pageRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const lenis = new Lenis({
+      duration: 0.9,
+      easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
+      smoothWheel: true,
+    });
+
+    let frame = 0;
+    const raf = (time: number) => {
+      lenis.raf(time);
+      frame = requestAnimationFrame(raf);
+    };
+
+    frame = requestAnimationFrame(raf);
+    return () => {
+      cancelAnimationFrame(frame);
+      lenis.destroy();
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!pageRef.current) return;
+
+    const revealItems = pageRef.current.querySelectorAll('[data-reveal]');
+    if (revealItems.length === 0) return;
+
+    gsap.fromTo(
+      revealItems,
+      { y: 18, opacity: 0 },
+      { y: 0, opacity: 1, duration: 0.55, ease: 'power3.out', stagger: 0.06 }
+    );
+  }, [path]);
 
   // Decide visibility based on route
   // Welcome page has its own hero layout
@@ -66,6 +102,7 @@ export default function Layout() {
       <main className={`flex-1 flex flex-col relative ${showBottomNav ? 'pb-20' : ''}`}>
         <AnimatePresence mode="wait">
           <motion.div
+            ref={pageRef}
             key={path}
             initial={{ opacity: 0, x: 10 }}
             animate={{ opacity: 1, x: 0 }}

@@ -3,45 +3,38 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Check, Verified, ShoppingCart, Minus, Plus, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useCart } from '../contexts/CartContext';
-import { supabase } from '../lib/supabase';
-
-interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  image_url: string;
-  level: number;
-}
+import { useAuth } from '../contexts/AuthContext';
+import { DemoProduct, ensureDemoProfile, getBestDemoProduct, getDemoProfile } from '../lib/demoStore';
 
 export default function CustomizeOrder() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { addToCart } = useCart();
   const [packSize, setPackSize] = useState('5 kg');
   const [quantity, setQuantity] = useState(1);
   const [frequency, setFrequency] = useState('one-time');
   
-  const [product, setProduct] = useState<Product | null>(null);
+  const [product, setProduct] = useState<DemoProduct | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchProduct = async () => {
-      // Fetch level 5 product for now, or just the first product
-      const { data, error } = await supabase
-        .from('products')
-        .select('*')
-        .order('level', { ascending: false })
-        .limit(1)
-        .single();
-        
-      if (!error && data) {
-        setProduct(data);
+    const fetchProduct = () => {
+      let matchedLevel = 5;
+      
+      if (user) {
+        const profile = getDemoProfile(user.id) || ensureDemoProfile(user);
+          
+        if (profile?.matched_level) {
+          matchedLevel = profile.matched_level;
+        }
       }
+
+      setProduct(getBestDemoProduct(matchedLevel));
       setLoading(false);
     };
     
     fetchProduct();
-  }, []);
+  }, [user]);
 
   const handleAddToCart = () => {
     if (!product) return;
