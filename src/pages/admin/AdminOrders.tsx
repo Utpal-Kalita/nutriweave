@@ -32,8 +32,8 @@ export default function AdminOrders() {
           <Loader2 className="animate-spin text-primary" size={32} />
         </div>
       ) : (
-        <div className="bg-white rounded-3xl border border-surface-container-high overflow-hidden shadow-sm">
-          <table className="w-full text-left">
+        <div className="bg-white rounded-3xl border border-surface-container-high overflow-x-auto shadow-sm">
+          <table className="w-full min-w-[860px] text-left">
             <thead className="bg-surface-container-lowest border-b border-surface-container-high text-on-surface-variant text-sm">
               <tr>
                 <th className="px-6 py-4 font-semibold">Order ID</th>

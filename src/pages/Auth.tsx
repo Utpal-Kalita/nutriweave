@@ -28,8 +28,8 @@ export default function Auth() {
   };
 
   return (
-    <div className="flex-1 flex flex-col bg-[#F7F3EA] px-6 pt-12 pb-24">
-      <div className="max-w-md mx-auto w-full">
+    <div className="flex-1 flex flex-col justify-center bg-[#F7F3EA] px-6 pt-12 pb-24 lg:py-16">
+      <div className="max-w-md mx-auto w-full lg:max-w-lg lg:rounded-[32px] lg:border lg:border-[#EFE8D8] lg:bg-white lg:p-10 lg:shadow-xl lg:shadow-black/5">
         <motion.div
            initial={{ y: 20, opacity: 0 }}
            animate={{ y: 0, opacity: 1 }}

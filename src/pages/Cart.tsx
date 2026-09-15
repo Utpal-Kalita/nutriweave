@@ -94,7 +94,7 @@ export default function Cart() {
 
   if (showSuccess) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-surface">
+      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-surface min-h-[calc(100vh-5rem)]">
         <motion.div 
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
@@ -122,7 +122,7 @@ export default function Cart() {
 
   if (!cart) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-surface">
+      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-surface min-h-[calc(100vh-5rem)]">
         <div className="w-24 h-24 bg-surface-container rounded-full flex items-center justify-center mb-6 text-outline">
           <ShoppingBag size={48} />
         </div>
@@ -140,14 +140,14 @@ export default function Cart() {
 
   return (
     <div className="flex flex-col min-h-full bg-surface-container-low">
-      <main className="flex-1 px-5 pt-8 pb-32">
-        <div data-reveal className="mb-6">
+      <main className="flex-1 w-full max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 pt-8 lg:pt-12 pb-32 lg:pb-16 lg:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)] lg:items-start lg:gap-x-10">
+        <div data-reveal className="mb-6 lg:col-span-2 lg:mb-8">
           <p className="text-xs font-bold uppercase tracking-widest text-primary mb-2">Secure mock checkout</p>
-          <h1 className="text-3xl font-bold text-on-surface font-display">Checkout</h1>
+          <h1 className="text-3xl font-bold text-on-surface font-display lg:text-5xl">Checkout</h1>
         </div>
         
         {/* Order Summary */}
-        <section data-reveal className="bg-surface-container-lowest rounded-3xl p-6 shadow-sm border border-surface-container-high mb-6">
+        <section data-reveal className="bg-surface-container-lowest rounded-3xl p-6 lg:p-7 shadow-sm border border-surface-container-high mb-6 lg:col-start-2 lg:row-start-2 lg:row-span-3 lg:sticky lg:top-28 lg:mb-0">
           <h2 className="text-lg font-bold text-on-surface mb-4 font-display flex items-center gap-2">
             <ShoppingBag size={20} className="text-primary" />
             Order Summary
@@ -178,10 +178,18 @@ export default function Cart() {
               <span className="font-bold text-primary">₹{cart.price * cart.quantity}</span>
             </div>
           </div>
+          <button
+            onClick={handlePlaceOrder}
+            disabled={loading || paymentStatus !== 'idle'}
+            className="hidden lg:flex w-full mt-6 bg-primary text-white font-display font-bold h-14 rounded-full shadow-lg shadow-primary/30 items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-70 disabled:active:scale-100"
+          >
+            Proceed to Pay
+            <ArrowRight size={20} />
+          </button>
         </section>
 
         {/* Shipping Address */}
-        <div data-reveal className={`w-full bg-surface-container-lowest rounded-2xl p-5 shadow-sm border mb-4 transition-all ${addressError ? 'border-error ring-1 ring-error' : 'border-surface-container-high focus-within:border-primary focus-within:ring-1 focus-within:ring-primary'}`}>
+        <div data-reveal className={`w-full bg-surface-container-lowest rounded-2xl p-5 shadow-sm border mb-4 transition-all lg:col-start-1 lg:row-start-2 ${addressError ? 'border-error ring-1 ring-error' : 'border-surface-container-high focus-within:border-primary focus-within:ring-1 focus-within:ring-primary'}`}>
           <div className="flex items-center gap-4 text-left mb-3">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${addressError ? 'bg-error/10 text-error' : 'bg-primary/10 text-primary'}`}>
               <MapPin size={20} />
@@ -203,7 +211,7 @@ export default function Cart() {
         </div>
 
         {/* Payment Method */}
-        <section data-reveal className="bg-surface-container-lowest rounded-2xl p-5 shadow-sm border border-surface-container-high mb-4">
+        <section data-reveal className="bg-surface-container-lowest rounded-2xl p-5 lg:p-6 shadow-sm border border-surface-container-high mb-4 lg:col-start-1 lg:row-start-3">
           <div className="flex items-center gap-4 text-left mb-4">
             <div className="w-10 h-10 bg-secondary/10 rounded-full flex items-center justify-center text-secondary shrink-0">
               <ShieldCheck size={20} />
@@ -240,7 +248,7 @@ export default function Cart() {
         </section>
 
         {/* Promo */}
-        <div data-reveal className="bg-secondary-container/20 rounded-2xl p-4 border border-secondary/20 flex items-center justify-between mb-8">
+        <div data-reveal className="bg-secondary-container/20 rounded-2xl p-4 border border-secondary/20 flex items-center justify-between mb-8 lg:col-start-1 lg:row-start-4">
           <div className="flex items-center gap-2">
              <CheckCircle2 size={16} className="text-secondary" />
              <span className="text-xs font-bold text-secondary uppercase tracking-wider">NUTRIFLAT30 Applied</span>
@@ -325,7 +333,7 @@ export default function Cart() {
       )}
 
       {/* Pay Button Sticky */}
-      <div className="fixed bottom-24 left-0 right-0 px-5 max-w-md mx-auto z-40">
+      <div className="fixed bottom-24 left-0 right-0 px-5 max-w-md mx-auto z-40 lg:hidden">
         <button 
           onClick={handlePlaceOrder}
           disabled={loading || paymentStatus !== 'idle'}

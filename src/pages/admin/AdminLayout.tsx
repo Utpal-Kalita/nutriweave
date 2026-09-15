@@ -14,9 +14,9 @@ export default function AdminLayout() {
   ];
 
   return (
-    <div className="flex h-screen bg-surface-container-lowest">
+    <div className="flex min-h-screen bg-surface-container-lowest">
       {/* Sidebar */}
-      <aside className="w-64 bg-surface-container-low border-r border-surface-container-high flex flex-col">
+      <aside className="w-64 xl:w-72 shrink-0 bg-surface-container-low border-r border-surface-container-high flex flex-col sticky top-0 h-screen">
         <div className="p-6">
           <h1 className="text-2xl font-bold font-display text-primary">Admin Panel</h1>
         </div>
@@ -51,8 +51,10 @@ export default function AdminLayout() {
       </aside>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-auto bg-surface p-8">
-        <Outlet />
+      <main className="flex-1 min-w-0 bg-surface p-6 lg:p-8 xl:p-10">
+        <div className="w-full max-w-7xl mx-auto">
+          <Outlet />
+        </div>
       </main>
     </div>
   );

@@ -18,7 +18,7 @@ export default function AdminProducts() {
 
   return (
     <div>
-      <div className="flex justify-between items-center mb-8">
+      <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
         <h2 className="text-3xl font-bold font-display text-on-surface">Products</h2>
         <button className="bg-primary text-white px-4 py-2 rounded-xl flex items-center gap-2 font-medium hover:bg-primary-container transition-colors">
           <Plus size={18} />
@@ -31,8 +31,8 @@ export default function AdminProducts() {
           <Loader2 className="animate-spin text-primary" size={32} />
         </div>
       ) : (
-        <div className="bg-white rounded-3xl border border-surface-container-high overflow-hidden shadow-sm">
-          <table className="w-full text-left">
+        <div className="bg-white rounded-3xl border border-surface-container-high overflow-x-auto shadow-sm">
+          <table className="w-full min-w-[720px] text-left">
             <thead className="bg-surface-container-lowest border-b border-surface-container-high text-on-surface-variant text-sm">
               <tr>
                 <th className="px-6 py-4 font-semibold">Name</th>

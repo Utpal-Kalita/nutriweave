@@ -69,10 +69,10 @@ export default function CustomizeOrder() {
   }
 
   return (
-    <div className="flex flex-col min-h-full bg-surface pb-44">
-      <main className="max-w-md mx-auto w-full">
+    <div className="flex flex-col min-h-full bg-surface pb-44 lg:pb-14">
+      <main className="w-full max-w-7xl mx-auto lg:grid lg:grid-cols-[minmax(0,1.05fr)_minmax(420px,0.95fr)] lg:gap-x-12 lg:px-10 lg:pt-10">
         {/* Hero Product Card */}
-        <section className="px-container mt-4 mb-8">
+        <section className="px-container mt-4 mb-8 lg:col-start-1 lg:row-start-1 lg:row-span-5 lg:self-start lg:sticky lg:top-28 lg:m-0 lg:px-0">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -82,23 +82,23 @@ export default function CustomizeOrder() {
               <Verified size={14} fill="currentColor" />
               Level {product.level}
             </div>
-            <div className="aspect-[4/3] w-full bg-surface-container overflow-hidden">
+            <div className="aspect-[4/3] w-full bg-surface-container overflow-hidden lg:aspect-[5/4]">
               <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
             </div>
-            <div className="p-5">
-              <h2 className="text-2xl font-bold text-on-surface mb-1 font-display">{product.name}</h2>
-              <p className="text-sm text-on-surface-variant font-sans">{product.description}</p>
+            <div className="p-5 lg:p-8">
+              <h2 className="text-2xl font-bold text-on-surface mb-1 font-display lg:text-3xl">{product.name}</h2>
+              <p className="text-sm text-on-surface-variant font-sans lg:text-base lg:leading-relaxed">{product.description}</p>
             </div>
           </motion.div>
         </section>
 
         {/* Pack Size Section */}
-        <section className="px-container mb-10">
+        <section className="px-container mb-10 lg:col-start-2 lg:row-start-1 lg:px-0 lg:mb-8">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-xl font-bold text-on-surface font-display">Pack Size</h3>
             <span className="text-sm text-on-surface-variant">Select one</span>
           </div>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-3 xl:grid-cols-4">
             {['1 kg', '5 kg', '10 kg', '25 kg'].map(size => (
               <button
                 key={size}
@@ -122,7 +122,7 @@ export default function CustomizeOrder() {
         </section>
 
         {/* Quantity Section */}
-        <section className="px-container mb-10">
+        <section className="px-container mb-10 lg:col-start-2 lg:row-start-2 lg:px-0 lg:mb-8">
           <div className="bg-surface-container-lowest p-5 rounded-2xl shadow-sm border border-surface-container-high flex items-center justify-between">
             <div>
               <h3 className="text-xl font-bold text-on-surface font-display">Quantity</h3>
@@ -149,7 +149,7 @@ export default function CustomizeOrder() {
         </section>
 
         {/* Delivery Frequency */}
-        <section className="px-container mb-10">
+        <section className="px-container mb-10 lg:col-start-2 lg:row-start-3 lg:px-0 lg:mb-8">
           <h3 className="text-xl font-bold text-on-surface mb-4 font-display">Delivery Frequency</h3>
           <div className="flex flex-col gap-3">
             {[
@@ -186,7 +186,7 @@ export default function CustomizeOrder() {
         </section>
 
         {/* Optional Note */}
-        <section className="px-container mb-10 pb-8">
+        <section className="px-container mb-10 pb-8 lg:col-start-2 lg:row-start-4 lg:px-0 lg:mb-6 lg:pb-0">
           <h3 className="text-xl font-bold text-on-surface mb-2 font-display">Add a Note <span className="text-sm font-normal text-on-surface-variant">(Optional)</span></h3>
           <textarea 
             className="w-full rounded-xl border border-outline-variant bg-surface-container-lowest p-5 text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-outline resize-none transition-shadow" 
@@ -194,10 +194,24 @@ export default function CustomizeOrder() {
             rows={2}
           ></textarea>
         </section>
+
+        <section className="hidden lg:flex lg:col-start-2 lg:row-start-5 items-center justify-between gap-8 rounded-3xl border border-surface-container-high bg-surface-container-lowest p-6 shadow-sm">
+          <div className="flex flex-col">
+            <span className="text-sm text-on-surface-variant font-medium">Total Price</span>
+            <span className="text-3xl font-bold text-on-surface">₹{product.price * quantity}</span>
+          </div>
+          <button
+            onClick={handleAddToCart}
+            className="min-w-56 bg-primary text-on-primary font-display font-semibold py-4 px-7 rounded-full shadow-sm hover:opacity-90 active:scale-95 transition-all flex items-center justify-center gap-2"
+          >
+            <ShoppingCart size={20} />
+            Add to Cart
+          </button>
+        </section>
       </main>
 
       {/* Sticky Bottom Bar - Offset to sit above global nav */}
-      <div className="fixed bottom-20 left-0 right-0 max-w-md mx-auto bg-white/90 backdrop-blur-md border-t border-surface-container shadow-[0px_-4px_16px_rgba(0,0,0,0.04)] z-40 pt-4 pb-4 px-5">
+      <div className="fixed bottom-20 left-0 right-0 max-w-md mx-auto bg-white/90 backdrop-blur-md border-t border-surface-container shadow-[0px_-4px_16px_rgba(0,0,0,0.04)] z-40 pt-4 pb-4 px-5 lg:hidden">
         <div className="flex items-center justify-between gap-6">
           <div className="flex flex-col">
             <span className="text-xs text-on-surface-variant font-medium">Total Price</span>

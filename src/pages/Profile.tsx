@@ -38,14 +38,14 @@ export default function Profile() {
   const firstName = user.user_metadata?.full_name?.split(' ')[0] || 'Friend';
 
   return (
-    <div className="flex flex-col min-h-screen bg-surface px-5 pt-8 pb-32 w-full">
+    <div className="flex flex-col min-h-full bg-surface px-5 sm:px-8 lg:px-10 pt-8 lg:pt-12 pb-32 lg:pb-16 w-full max-w-7xl mx-auto">
       {/* Hero Greeting */}
       <section className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="font-display text-3xl font-bold text-on-surface">Hello, {firstName}</h1>
-          <p className="text-sm text-on-surface-variant mt-1">Welcome back to your nutrition hub.</p>
+          <h1 className="font-display text-3xl font-bold text-on-surface lg:text-5xl">Hello, {firstName}</h1>
+          <p className="text-sm text-on-surface-variant mt-1 lg:text-base">Welcome back to your nutrition hub.</p>
         </div>
-        <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-primary-container shadow-sm shrink-0">
+        <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-primary-container shadow-sm shrink-0 lg:w-20 lg:h-20">
           <img src={avatarImage} alt="Profile picture" className="w-full h-full object-cover" />
         </div>
       </section>
@@ -53,7 +53,7 @@ export default function Profile() {
       {/* Bento Grid Dashboard */}
       <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Profile Overview Card */}
-        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-surface-container-lowest rounded-[20px] p-4 shadow-[0px_6px_20px_rgba(0,0,0,0.04)] flex flex-col gap-3 border border-surface-container-high/50">
+        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-surface-container-lowest rounded-[20px] p-4 lg:p-6 shadow-[0px_6px_20px_rgba(0,0,0,0.04)] flex flex-col gap-3 border border-surface-container-high/50">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container shrink-0">
               <User size={20} />
@@ -76,7 +76,7 @@ export default function Profile() {
         </motion.div>
 
         {/* Preferences Card */}
-        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }} className="bg-surface-container-lowest rounded-[20px] p-4 shadow-[0px_6px_20px_rgba(0,0,0,0.04)] flex flex-col gap-3 border border-surface-container-high/50">
+        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }} className="bg-surface-container-lowest rounded-[20px] p-4 lg:p-6 shadow-[0px_6px_20px_rgba(0,0,0,0.04)] flex flex-col gap-3 border border-surface-container-high/50">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-tertiary-container flex items-center justify-center text-on-tertiary-container shrink-0">
               <Sliders size={20} />
@@ -97,7 +97,7 @@ export default function Profile() {
         </motion.div>
 
         {/* Recent Orders List (Full Width) */}
-        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }} className="col-span-1 md:col-span-2 bg-surface-container-lowest rounded-[20px] p-5 shadow-[0px_6px_20px_rgba(0,0,0,0.04)] flex flex-col gap-4 border border-surface-container-high/50">
+        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }} className="col-span-1 md:col-span-2 bg-surface-container-lowest rounded-[20px] p-5 lg:p-7 shadow-[0px_6px_20px_rgba(0,0,0,0.04)] flex flex-col gap-4 border border-surface-container-high/50">
           <div className="flex justify-between items-end">
             <h2 className="font-display text-xl font-bold text-on-surface">Recent Orders</h2>
             <button className="text-sm text-primary font-semibold hover:underline">View All</button>
@@ -111,12 +111,12 @@ export default function Profile() {
             ) : orders.length > 0 ? (
               orders.map((order, index) => (
                 <div key={order.id} className="flex items-center justify-between p-3 rounded-xl border border-surface-variant hover:border-primary-container transition-colors">
-                  <div className="flex items-center gap-4">
+                  <div className="flex min-w-0 items-center gap-4">
                     <div className="w-16 h-16 rounded-lg overflow-hidden bg-surface-container shrink-0">
                       <img src={riceImg} alt={order.product_name} className="w-full h-full object-cover" />
                     </div>
-                    <div>
-                      <h4 className="text-sm font-semibold text-on-surface">{order.product_name}</h4>
+                    <div className="min-w-0">
+                      <h4 className="text-sm font-semibold text-on-surface truncate">{order.product_name}</h4>
                       <p className="text-xs text-on-surface-variant mt-1">
                         {order.status === 'completed' ? 'Delivered' : 'Pending'} • {new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </p>

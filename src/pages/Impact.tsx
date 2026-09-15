@@ -10,11 +10,11 @@ export default function Impact() {
   ];
 
   return (
-    <div className="flex flex-col min-h-full bg-background px-5 pt-8">
+    <div className="flex flex-col min-h-full bg-background w-full max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 pt-8 lg:pt-12 pb-8">
       {/* Header */}
-      <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="mb-8">
-        <h1 className="text-4xl font-bold text-on-surface mb-2 font-display">Your Impact</h1>
-        <p className="text-base text-on-surface-variant">See how making the switch to Nutrifibe elevates your daily nutrition.</p>
+      <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="mb-8 max-w-2xl">
+        <h1 className="text-4xl font-bold text-on-surface mb-2 font-display lg:text-5xl">Your Impact</h1>
+        <p className="text-base text-on-surface-variant lg:text-lg">See how making the switch to Nutrifibe elevates your daily nutrition.</p>
       </motion.div>
 
       {/* Tabs */}
@@ -31,18 +31,18 @@ export default function Impact() {
           <div className="absolute inset-0 bg-gradient-to-b from-transparent to-surface-container-lowest/90"></div>
         </div>
         
-        <div className="relative z-10 p-8">
-          <div className="flex justify-between items-start mb-12">
+        <div className="relative z-10 p-8 lg:p-10">
+          <div className="flex justify-between items-start mb-12 lg:mb-10">
             <div>
               <p className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] mb-1 font-sans">Comparison</p>
-              <h2 className="text-3xl font-bold text-on-surface font-display leading-tight">Nutrifibe vs<br/>Regular Rice</h2>
+              <h2 className="text-3xl font-bold text-on-surface font-display leading-tight lg:text-4xl">Nutrifibe vs<br/>Regular Rice</h2>
             </div>
             <div className="bg-primary-container text-white rounded-full p-3 flex items-center justify-center shadow-lg shadow-primary/20">
               <Leaf size={24} fill="currentColor" />
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-6">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
             {metrics.map((m, i) => (
               <motion.div 
                 key={m.label} 
@@ -79,7 +79,7 @@ export default function Impact() {
       {/* Key Benefits List */}
       <div className="mb-10">
         <h3 className="text-2xl font-bold text-on-surface mb-6 font-display">Key Benefits</h3>
-        <div className="flex flex-col gap-4">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
           {[
             { title: 'Heart Health', desc: 'Increased magnesium supports cardiovascular function.', icon: Heart, color: 'bg-secondary-container' },
             { title: 'Immunity Boost', desc: 'Higher zinc content contributes to a resilient immune system.', icon: Shield, color: 'bg-primary-container/20' },

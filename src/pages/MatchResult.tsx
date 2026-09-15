@@ -61,13 +61,13 @@ export default function MatchResult() {
   };
 
   return (
-    <div className="flex flex-col min-h-full bg-background items-center px-5 pt-8 pb-32">
+    <div className="flex flex-col min-h-full bg-background items-center px-5 sm:px-8 lg:px-10 pt-8 lg:pt-12 pb-32 lg:pb-16">
       <motion.div
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="text-center mb-8"
+        className="text-center mb-8 w-full max-w-7xl lg:text-left lg:mb-10"
       >
-        <h1 className="text-4xl font-bold text-primary mb-3 font-display">Your Nutrifibe Match</h1>
+        <h1 className="text-4xl font-bold text-primary mb-3 font-display lg:text-5xl">Your Nutrifibe Match</h1>
         <p className="text-lg text-on-surface-variant max-w-2xl">
           Based on your metabolic profile, we've identified your optimal nutritional balance.
         </p>
@@ -78,10 +78,11 @@ export default function MatchResult() {
         initial={{ scale: 0.95, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ delay: 0.2 }}
-        className="bg-surface-container-lowest rounded-[32px] shadow-lg border border-[#EFE8D8] w-full p-8 flex flex-col items-center relative overflow-hidden mb-8"
+        className="bg-surface-container-lowest rounded-[32px] shadow-lg border border-[#EFE8D8] w-full max-w-7xl p-8 lg:p-12 grid grid-cols-1 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center lg:gap-14 relative overflow-hidden"
       >
+        <div className="flex min-w-0 flex-col items-center">
         {/* Gauge Visual */}
-        <div className="relative w-full aspect-[2/1.1] flex items-end justify-center mb-6">
+        <div className="relative w-full max-w-xl aspect-[2/1.1] flex items-end justify-center mb-6">
           <svg className="w-full h-full drop-shadow-sm" viewBox="0 0 100 50">
             {/* ... same SVG defs and paths ... */}
             <defs>
@@ -128,7 +129,9 @@ export default function MatchResult() {
         <p className="text-base text-on-surface-variant text-center mb-8 font-sans px-4">
           {levelInfo.description}
         </p>
+        </div>
 
+        <div className="flex min-w-0 flex-col items-center lg:items-start">
         {/* AI Roadmap Card */}
         <div className="w-full bg-primary/5 rounded-2xl p-5 border border-primary/10 mb-6 text-left">
           <div className="flex items-center gap-2 mb-3 text-primary">
@@ -148,7 +151,7 @@ export default function MatchResult() {
         </div>
 
         {/* Tags */}
-        <div className="flex flex-wrap justify-center gap-2 w-full mb-6">
+        <div className="flex flex-wrap justify-center lg:justify-start gap-2 w-full mb-6">
           {['High Minerals', 'Steady Energy', 'Good Protein'].map((tag, i) => (
             <motion.span 
               key={tag}
@@ -166,7 +169,7 @@ export default function MatchResult() {
           ))}
         </div>
 
-        <button 
+        <button
           onClick={() => navigate('/scale')}
           className="text-xs font-bold text-primary hover:underline flex items-center gap-1 group"
           id="learn-about-scale"
@@ -174,17 +177,16 @@ export default function MatchResult() {
           Learn more about our nutritional scale
           <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
         </button>
+        <button
+          onClick={() => navigate('/customize')}
+          className="bg-primary hover:bg-primary-container text-white font-display text-lg font-semibold w-full py-4 rounded-full flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-95 transition-all mt-8 lg:w-auto lg:min-w-64 lg:px-8"
+          id="continue-to-order-button"
+        >
+          Continue to Order
+          <ArrowRight size={20} />
+        </button>
+        </div>
       </motion.div>
-
-      {/* Action Button */}
-      <button 
-        onClick={() => navigate('/customize')}
-        className="bg-primary hover:bg-primary-container text-white font-display text-lg font-semibold w-full py-4 rounded-full flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-95 transition-all mt-4"
-        id="continue-to-order-button"
-      >
-        Continue to Order
-        <ArrowRight size={20} />
-      </button>
     </div>
   );
 }

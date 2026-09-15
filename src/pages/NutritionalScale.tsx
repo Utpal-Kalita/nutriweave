@@ -45,22 +45,22 @@ export default function NutritionalScale() {
   ];
 
   return (
-    <div className="flex flex-col min-h-full bg-background px-5 pt-8 pb-10 max-w-2xl mx-auto">
+    <div className="flex flex-col min-h-full bg-background px-5 sm:px-8 lg:px-10 pt-8 lg:pt-12 pb-10 lg:pb-16 w-full max-w-6xl mx-auto">
       {/* Header */}
       <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="mb-12 text-center">
-        <h1 className="text-4xl font-bold text-on-background mb-2 font-display">Nutritional Scale</h1>
-        <p className="text-lg text-on-surface-variant">Understanding the balance between functional density and comfort.</p>
+        <h1 className="text-4xl font-bold text-on-background mb-2 font-display lg:text-5xl">Nutritional Scale</h1>
+        <p className="text-lg text-on-surface-variant lg:text-xl">Understanding the balance between functional density and comfort.</p>
       </motion.div>
 
       {/* Vertical Scale */}
-      <div className="flex flex-col gap-6 relative">
+      <div className="grid grid-cols-1 gap-6 relative lg:grid-cols-2">
         {sections.map((section, idx) => (
           <motion.div 
             key={section.id} 
             initial={{ x: idx % 2 === 0 ? -20 : 20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: 0.1 * idx }}
-            className="flex items-stretch gap-6 group"
+            className="flex items-stretch gap-4 sm:gap-6 group"
           >
             <div className={`w-[56px] shrink-0 rounded-[28px] ${section.color} p-1 flex flex-col gap-1 items-center py-2 border ${section.borderColor}`}>
               {section.range.map(num => (
@@ -99,7 +99,7 @@ export default function NutritionalScale() {
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ delay: 0.5 }}
-        className="mt-12 bg-surface-container rounded-3xl p-8 border border-outline-variant/20"
+        className="mt-12 bg-surface-container rounded-3xl p-8 lg:p-10 border border-outline-variant/20"
       >
         <div className="flex items-start gap-4">
           <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-0.5 text-primary">
