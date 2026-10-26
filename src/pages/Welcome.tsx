@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
-import { ArrowRight, Leaf, Activity, Dumbbell, Beaker } from 'lucide-react';
+import { ArrowRight, Leaf, Activity, Dumbbell, Beaker, HeartPulse, Utensils } from 'lucide-react';
 import { motion } from 'motion/react';
 
 const welcomeImage = "https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=2070&auto=format&fit=crop";
@@ -40,9 +40,17 @@ export default function Welcome() {
       >
         <div className="w-full max-w-xl mx-auto">
         {/* Branding */}
-        <div className="flex items-center gap-1 mb-4 lg:mb-8">
-          <Leaf className="text-primary w-6 h-6 fill-primary" />
-          <span className="font-display text-xl font-semibold text-primary tracking-tight">Nutrifibe</span>
+        <div className="flex items-center justify-between gap-4 mb-4 lg:mb-8">
+          <div className="flex items-center gap-1">
+            <Leaf className="text-primary w-6 h-6 fill-primary" />
+            <span className="font-display text-xl font-semibold text-primary tracking-tight">Nutrifibe</span>
+          </div>
+          <button
+            onClick={() => navigate(user ? '/match' : '/auth')}
+            className="rounded-full px-4 py-2 text-sm font-bold text-primary transition-colors hover:bg-secondary-container/40"
+          >
+            {user ? 'My Match' : 'Sign In'}
+          </button>
         </div>
 
         {/* Title */}
@@ -61,33 +69,55 @@ export default function Welcome() {
             <div className="w-10 h-10 rounded-full bg-secondary-container/50 flex items-center justify-center mb-2 text-on-secondary-container">
               <Beaker size={20} />
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant text-center">Minerals</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-on-surface-variant text-center">Minerals</span>
           </div>
           
           <div className="bg-surface rounded-2xl p-4 flex flex-col items-center justify-center border border-surface-container shadow-sm lg:min-h-32">
             <div className="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center mb-2 text-primary">
               <Activity size={20} />
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant text-center leading-tight">Glycemic<br/>Control</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-on-surface-variant text-center leading-tight">Glycemic<br/>Control</span>
           </div>
 
           <div className="bg-surface rounded-2xl p-4 flex flex-col items-center justify-center border border-surface-container shadow-sm lg:min-h-32">
             <div className="w-10 h-10 rounded-full bg-tertiary-container/20 flex items-center justify-center mb-2 text-tertiary">
               <Dumbbell size={20} fill="currentColor" />
             </div>
-            <span className="text-[10px] font-bold uppercase tracking-wider text-on-surface-variant text-center">Protein</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-on-surface-variant text-center">Protein</span>
+          </div>
+
+          <div className="bg-surface rounded-2xl p-4 flex flex-col items-center justify-center border border-surface-container shadow-sm lg:min-h-32">
+            <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center mb-2 text-amber-700">
+              <Utensils size={20} />
+            </div>
+            <span className="text-xs font-bold uppercase tracking-wider text-on-surface-variant text-center">Taste</span>
+          </div>
+
+          <div className="bg-surface rounded-2xl p-4 flex flex-col items-center justify-center border border-surface-container shadow-sm lg:min-h-32">
+            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center mb-2 text-slate-700">
+              <HeartPulse size={20} />
+            </div>
+            <span className="text-xs font-bold uppercase tracking-wider text-on-surface-variant text-center">Overall</span>
           </div>
         </div>
 
         {/* CTA Action */}
-        <button 
-          onClick={handleStart}
-          className="w-full h-14 bg-primary text-on-primary rounded-full flex items-center justify-center gap-2 font-display font-semibold shadow-[0px_8px_20px_rgba(47,110,63,0.2)] active:scale-[0.98] transition-all lg:w-auto lg:min-w-56 lg:px-8"
-          id="get-started-button"
-        >
-          Get Started
-          <ArrowRight size={20} />
-        </button>
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <button
+            onClick={handleStart}
+            className="w-full h-14 bg-primary text-on-primary rounded-full flex items-center justify-center gap-2 font-display font-semibold shadow-[0px_8px_20px_rgba(47,110,63,0.2)] active:scale-[0.98] transition-all sm:w-auto sm:min-w-56 sm:px-8"
+            id="get-started-button"
+          >
+            Get Started
+            <ArrowRight size={20} />
+          </button>
+          <button
+            onClick={() => navigate('/how-it-works')}
+            className="h-14 rounded-full border border-outline-variant bg-white px-7 font-display font-semibold text-primary transition-colors hover:bg-surface-container-low"
+          >
+            How it works
+          </button>
+        </div>
         </div>
       </motion.div>
     </div>

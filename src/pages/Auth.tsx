@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'motion/react';
-import { Mail, Lock, Loader2, ArrowRight, Github } from 'lucide-react';
+import { Mail, Lock, Loader2, ArrowRight, Github, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Auth() {
@@ -10,8 +10,12 @@ export default function Auth() {
   const [loading, setLoading] = useState(false);
   const [mode, setMode] = useState<'login' | 'signup'>('login');
   const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { signIn } = useAuth();
+  const requestedPath = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
+  const destination = requestedPath && requestedPath !== '/auth' ? requestedPath : '/priority';
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,7 +24,7 @@ export default function Auth() {
 
     try {
       await signIn(email, password);
-      navigate('/priority');
+      navigate(destination, { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Demo login failed');
       setLoading(false);
@@ -49,29 +53,45 @@ export default function Auth() {
         </motion.div>
 
         <form onSubmit={handleAuth} className="space-y-4">
-          <div className="relative">
-            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-outline" size={20} />
-            <input
-              type="email"
-              placeholder="Email address"
-              autoComplete="username"
-              className="w-full bg-white border border-surface-container-high rounded-2xl h-14 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
+          <div>
+            <label htmlFor="email" className="mb-2 block text-sm font-semibold text-on-surface">Email address</label>
+            <div className="relative">
+              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-outline" size={20} aria-hidden="true" />
+              <input
+                id="email"
+                type="email"
+                placeholder="you@example.com"
+                autoComplete="username"
+                className="w-full bg-white border border-surface-container-high rounded-2xl h-14 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
           </div>
-          <div className="relative">
-            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-outline" size={20} />
-            <input
-              type="password"
-              placeholder="Password"
-              autoComplete="current-password"
-              className="w-full bg-white border border-surface-container-high rounded-2xl h-14 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
+          <div>
+            <label htmlFor="password" className="mb-2 block text-sm font-semibold text-on-surface">Password</label>
+            <div className="relative">
+              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-outline" size={20} aria-hidden="true" />
+              <input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                placeholder="Enter any password"
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                className="w-full bg-white border border-surface-container-high rounded-2xl h-14 pl-12 pr-12 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword((visible) => !visible)}
+                className="absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-outline transition-colors hover:bg-surface-container hover:text-primary"
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
+              </button>
+            </div>
           </div>
 
           <AnimatePresence>
@@ -115,7 +135,7 @@ export default function Auth() {
             onClick={async () => {
               setLoading(true);
               await signIn(email || 'demo@nutrifibe.local', password || 'demo');
-              navigate('/priority');
+              navigate(destination, { replace: true });
             }}
             className="w-full bg-white border border-surface-container-high text-on-surface h-14 rounded-full flex items-center justify-center gap-3 hover:bg-surface-container-low transition-colors active:scale-[0.98]"
           >
@@ -126,7 +146,10 @@ export default function Auth() {
 
         <div className="mt-10 text-center">
           <button 
-            onClick={() => setMode(mode === 'login' ? 'signup' : 'login')}
+            onClick={() => {
+              setMode(mode === 'login' ? 'signup' : 'login');
+              setError(null);
+            }}
             className="text-primary font-bold hover:underline"
           >
             {mode === 'login' ? "Don't have an account? Sign Up" : "Already have an account? Sign In"}

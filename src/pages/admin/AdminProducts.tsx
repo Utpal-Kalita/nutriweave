@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { DemoProduct, getDemoProducts } from '../../lib/demoStore';
-import { Loader2, Plus, Edit2, Trash2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 
 export default function AdminProducts() {
   const [products, setProducts] = useState<DemoProduct[]>([]);
@@ -20,10 +20,11 @@ export default function AdminProducts() {
     <div>
       <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
         <h2 className="text-3xl font-bold font-display text-on-surface">Products</h2>
-        <button className="bg-primary text-white px-4 py-2 rounded-xl flex items-center gap-2 font-medium hover:bg-primary-container transition-colors">
-          <Plus size={18} />
-          Add Product
-        </button>
+        <span className="rounded-full bg-surface-container px-4 py-2 text-sm font-semibold text-on-surface-variant">Demo catalog</span>
+      </div>
+
+      <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-relaxed text-amber-950">
+        Products must have an explicit recommender variant mapping before they can be offered for a Level 1, 2, or 3 result. Legacy product levels are not treated as workbook recommendation levels.
       </div>
 
       {loading ? (
@@ -32,13 +33,13 @@ export default function AdminProducts() {
         </div>
       ) : (
         <div className="bg-white rounded-3xl border border-surface-container-high overflow-x-auto shadow-sm">
-          <table className="w-full min-w-[720px] text-left">
+          <table className="w-full min-w-[860px] text-left">
             <thead className="bg-surface-container-lowest border-b border-surface-container-high text-on-surface-variant text-sm">
               <tr>
                 <th className="px-6 py-4 font-semibold">Name</th>
                 <th className="px-6 py-4 font-semibold">Price</th>
-                <th className="px-6 py-4 font-semibold">Level</th>
-                <th className="px-6 py-4 font-semibold text-right">Actions</th>
+                <th className="px-6 py-4 font-semibold">Legacy level</th>
+                <th className="px-6 py-4 font-semibold">Recommender variant</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-surface-container-high">
@@ -54,15 +55,14 @@ export default function AdminProducts() {
                       Level {product.level}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-right">
-                    <div className="flex justify-end gap-2">
-                      <button className="p-2 text-primary hover:bg-primary/10 rounded-lg transition-colors">
-                        <Edit2 size={16} />
-                      </button>
-                      <button className="p-2 text-error hover:bg-error/10 rounded-lg transition-colors">
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
+                  <td className="px-6 py-4">
+                    {product.recommendation_level ? (
+                      <span className="rounded-md bg-primary/10 px-2 py-1 text-xs font-bold text-primary">
+                        Level {product.recommendation_level} · {product.polishing_percentage ? `${product.polishing_percentage}% polish` : 'polishing not set'}
+                      </span>
+                    ) : (
+                      <span className="rounded-md bg-surface-container px-2 py-1 text-xs font-bold text-on-surface-variant">Not mapped</span>
+                    )}
                   </td>
                 </tr>
               ))}

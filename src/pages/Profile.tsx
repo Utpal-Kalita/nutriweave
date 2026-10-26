@@ -3,15 +3,18 @@ import { useNavigate } from 'react-router-dom';
 import { User, Sliders, ChevronRight, RotateCcw, LogOut, Package, Loader2 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useAuth } from '../contexts/AuthContext';
-import { DemoOrder, getDemoOrdersForUser } from '../lib/demoStore';
+import { useCart } from '../contexts/CartContext';
+import { DemoOrder, DemoProfile, getDemoOrdersForUser, getDemoProducts, getDemoProfile } from '../lib/demoStore';
 
 const avatarImage = "https://lh3.googleusercontent.com/aida-public/AB6AXuC1jP0cW1YMNjiBTHcML_eyhiht1z7-2t-9oS4kMDogRMdIbGMu0-sQKSDu2qsIIwCy1AcWUgMZ9z4G0CwZGH86QeVKgS-c_wc9XSqzn-2WfMdJZyZCjBPaWYVGN7zEaGJ6IJ-r4yV13z2U_f20-WMLAElhUA1IZxXyMD917vjtRdiPLC4AULh8I8Pw5Pvxs75CnCR8IYKRsFXVe72r6-I5io43u-vPh5i5daFcxkJxMjaciQJIWCEEApeM3r40vQtG7_cY5eHkmU0";
 const riceImg = "https://lh3.googleusercontent.com/aida-public/AB6AXuDOKYVkSAThdFox_Rm6aKWzQfZdJamvPRq3Yp-YTKk2s944tiAqESoA4W3fcqfLFpnpvWevRWe2frVhwID9eYv0UE7xzbNn6PabpAWXNiWnFgFXBF6TFKIFHgmCeqK3q9Hs1q2JfJpNq3zt6Cy-gXjiK97iBFJYxTIjlETl8YXXbDOgIAT3gN6cOaK_9Iq6VjC-ZdddXc9iPEyJ-QGmHFXb2BBFMV38IZ05v0Sq53VZwVoduuHEaDQhoMKGctq6UpU-FcBxQEpuEFg";
 
 export default function Profile() {
   const { user, signOut } = useAuth();
+  const { addToCart } = useCart();
   const navigate = useNavigate();
   const [orders, setOrders] = useState<DemoOrder[]>([]);
+  const [profile, setProfile] = useState<DemoProfile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -22,6 +25,7 @@ export default function Profile() {
 
     const fetchOrders = () => {
       setOrders(getDemoOrdersForUser(user.id));
+      setProfile(getDemoProfile(user.id));
       setLoading(false);
     };
 
@@ -31,6 +35,21 @@ export default function Profile() {
   const handleLogout = async () => {
     await signOut();
     navigate('/');
+  };
+
+  const handleReorder = (order: DemoOrder) => {
+    const product = getDemoProducts().find((item) => item.id === order.product_id);
+
+    addToCart({
+      id: order.product_id,
+      name: order.product_name,
+      price: product?.price || Math.ceil(order.total_price / Math.max(1, order.quantity)),
+      quantity: order.quantity,
+      size: order.size,
+      frequency: order.frequency,
+      level: product?.level || 5,
+    });
+    navigate('/cart');
   };
 
   if (!user) return null;
@@ -81,16 +100,19 @@ export default function Profile() {
             <div className="w-10 h-10 rounded-full bg-tertiary-container flex items-center justify-center text-on-tertiary-container shrink-0">
               <Sliders size={20} />
             </div>
-            <h3 className="font-display text-lg font-semibold text-on-surface">Dietary Preferences</h3>
+            <h3 className="font-display text-lg font-semibold text-on-surface">Rice Recommendation</h3>
           </div>
-          <div className="flex flex-wrap gap-2 mt-1">
-            <span className="bg-secondary-container/30 text-on-surface px-3 py-1 rounded-full text-xs font-bold">Vegan</span>
-            <span className="bg-secondary-container/30 text-on-surface px-3 py-1 rounded-full text-xs font-bold">Gluten-Free</span>
-            <span className="bg-secondary-container/30 text-on-surface px-3 py-1 rounded-full text-xs font-bold">Low Sodium</span>
-          </div>
+          {profile?.recommendation_level ? (
+            <div className="mt-1 flex flex-wrap items-center gap-2">
+              <span className="rounded-full bg-secondary-container/40 px-3 py-1 text-xs font-bold text-primary">Provisional Level {profile.recommendation_level}</span>
+              <button onClick={() => navigate('/match')} className="text-sm font-semibold text-primary hover:underline">View result</button>
+            </div>
+          ) : (
+            <p className="mt-1 text-sm leading-relaxed text-on-surface-variant">Complete the five-question rice preference questionnaire to see a provisional match.</p>
+          )}
           <div className="mt-auto border-t border-surface-variant pt-3">
-            <button className="w-full flex justify-between items-center text-on-surface-variant hover:text-primary transition-colors">
-              <span className="text-sm font-medium">Manage all settings</span>
+            <button onClick={() => navigate('/priority')} className="w-full flex justify-between items-center text-on-surface-variant hover:text-primary transition-colors">
+              <span className="text-sm font-medium">{profile?.recommendation_level ? 'Change questionnaire answers' : 'Start questionnaire'}</span>
               <ChevronRight size={20} />
             </button>
           </div>
@@ -100,7 +122,7 @@ export default function Profile() {
         <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }} className="col-span-1 md:col-span-2 bg-surface-container-lowest rounded-[20px] p-5 lg:p-7 shadow-[0px_6px_20px_rgba(0,0,0,0.04)] flex flex-col gap-4 border border-surface-container-high/50">
           <div className="flex justify-between items-end">
             <h2 className="font-display text-xl font-bold text-on-surface">Recent Orders</h2>
-            <button className="text-sm text-primary font-semibold hover:underline">View All</button>
+            <span className="text-sm text-on-surface-variant font-medium">{orders.length} total</span>
           </div>
           
           <div className="flex flex-col gap-3">
@@ -122,11 +144,11 @@ export default function Profile() {
                       </p>
                     </div>
                   </div>
-                  <button className={`hidden sm:flex text-sm px-4 py-2 rounded-full font-semibold active:scale-95 transition-all flex items-center gap-1.5 shadow-sm ${index === 0 ? 'bg-primary text-white hover:bg-primary-container' : 'bg-surface text-primary border border-primary hover:bg-secondary-container'}`}>
+                  <button onClick={() => handleReorder(order)} className={`hidden sm:flex text-sm px-4 py-2 rounded-full font-semibold active:scale-95 transition-all flex items-center gap-1.5 shadow-sm ${index === 0 ? 'bg-primary text-white hover:bg-primary-container' : 'bg-surface text-primary border border-primary hover:bg-secondary-container'}`}>
                     <RotateCcw size={16} />
                     <span>Reorder</span>
                   </button>
-                  <button className="sm:hidden text-primary p-2 hover:bg-surface-container rounded-full transition-colors">
+                  <button onClick={() => handleReorder(order)} aria-label={`Reorder ${order.product_name}`} className="sm:hidden text-primary p-2 hover:bg-surface-container rounded-full transition-colors">
                     <RotateCcw size={20} />
                   </button>
                 </div>

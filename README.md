@@ -18,3 +18,11 @@ View your app in AI Studio: https://ai.studio/apps/39b52ecc-c78a-45ac-8371-5d58f
 2. Set the `GEMINI_API_KEY` in [.env.local](.env.local) to your Gemini API key
 3. Run the app:
    `npm run dev`
+
+## Recommendation system
+
+The questionnaire and current four-input workbook rule are documented in [docs/recommendation-system.md](docs/recommendation-system.md).
+
+Run deterministic recommendation tests with:
+
+`npm test`

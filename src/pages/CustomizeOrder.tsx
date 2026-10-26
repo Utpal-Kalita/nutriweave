@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Check, Verified, ShoppingCart, Minus, Plus, Loader2 } from 'lucide-react';
+import { ArrowRight, Check, Verified, ShoppingCart, Minus, Plus, Loader2, PackageSearch } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
-import { DemoProduct, ensureDemoProfile, getBestDemoProduct, getDemoProfile } from '../lib/demoStore';
+import { DemoProduct, ensureDemoProfile, getDemoProducts, getDemoProfile } from '../lib/demoStore';
+import { calculateOrderPricing } from '../lib/pricing';
+import { mapRecommendationToProduct, RecommendationLevel } from '../lib/recommendation';
 
 export default function CustomizeOrder() {
   const navigate = useNavigate();
@@ -15,26 +17,26 @@ export default function CustomizeOrder() {
   const [frequency, setFrequency] = useState('one-time');
   
   const [product, setProduct] = useState<DemoProduct | null>(null);
+  const [recommendationLevel, setRecommendationLevel] = useState<RecommendationLevel | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchProduct = () => {
-      let matchedLevel = 5;
-      
-      if (user) {
-        const profile = getDemoProfile(user.id) || ensureDemoProfile(user);
-          
-        if (profile?.matched_level) {
-          matchedLevel = profile.matched_level;
-        }
+      if (!user) return;
+
+      const profile = getDemoProfile(user.id) || ensureDemoProfile(user);
+      if (!profile.recommendation_level || !profile.recommendation_answers) {
+        navigate('/priority', { replace: true });
+        return;
       }
 
-      setProduct(getBestDemoProduct(matchedLevel));
+      setRecommendationLevel(profile.recommendation_level);
+      setProduct(mapRecommendationToProduct(getDemoProducts(), profile.recommendation_level));
       setLoading(false);
     };
     
     fetchProduct();
-  }, [user]);
+  }, [navigate, user]);
 
   const handleAddToCart = () => {
     if (!product) return;
@@ -53,7 +55,7 @@ export default function CustomizeOrder() {
 
   if (loading) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-surface">
+      <div className="flex min-h-[calc(100vh-5rem)] w-full items-center justify-center bg-surface">
         <Loader2 className="animate-spin text-primary" size={48} />
       </div>
     );
@@ -61,12 +63,28 @@ export default function CustomizeOrder() {
 
   if (!product) {
     return (
-      <div className="flex flex-col h-screen w-full items-center justify-center bg-surface">
-        <p className="text-on-surface-variant font-bold mb-4">No products found</p>
-        <button onClick={() => navigate('/priority')} className="text-primary hover:underline">Go Back</button>
+      <div className="flex min-h-[calc(100vh-5rem)] w-full items-center justify-center bg-surface px-5 py-16">
+        <div className="w-full max-w-xl rounded-[32px] border border-surface-container-high bg-white p-8 text-center shadow-sm sm:p-10">
+          <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-surface-container text-primary">
+            <PackageSearch size={32} aria-hidden="true" />
+          </div>
+          <h1 className="mt-5 font-display text-2xl font-bold text-on-surface">Level {recommendationLevel ?? ''} product unavailable</h1>
+          <p className="mt-3 leading-relaxed text-on-surface-variant">
+            No catalog product is explicitly mapped to this polishing variant yet. We have not substituted a different product because recommendation levels are not product IDs.
+          </p>
+          <div className="mt-7 flex flex-col justify-center gap-3 sm:flex-row">
+            <button onClick={() => navigate('/match')} className="h-12 rounded-full border border-outline-variant px-6 font-semibold text-on-surface hover:bg-surface-container-low">Back to result</button>
+            <button onClick={() => navigate('/priority')} className="flex h-12 items-center justify-center gap-2 rounded-full bg-primary px-6 font-semibold text-white">
+              Change answers
+              <ArrowRight size={18} />
+            </button>
+          </div>
+        </div>
       </div>
     );
   }
+
+  const pricing = calculateOrderPricing(product.price, quantity, frequency, 0);
 
   return (
     <div className="flex flex-col min-h-full bg-surface pb-44 lg:pb-14">
@@ -80,7 +98,7 @@ export default function CustomizeOrder() {
           >
             <div className="absolute top-4 left-4 z-10 bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm border border-secondary-fixed/50 backdrop-blur-sm">
               <Verified size={14} fill="currentColor" />
-              Level {product.level}
+              Variant Level {product.recommendation_level}
             </div>
             <div className="aspect-[4/3] w-full bg-surface-container overflow-hidden lg:aspect-[5/4]">
               <img src={product.image_url} alt={product.name} className="w-full h-full object-cover" />
@@ -133,6 +151,7 @@ export default function CustomizeOrder() {
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
                 className="w-10 h-10 rounded-full flex items-center justify-center text-on-surface hover:bg-surface-variant transition-colors disabled:opacity-30"
                 disabled={quantity <= 1}
+                aria-label="Decrease quantity"
               >
                 <Minus size={20} />
               </button>
@@ -141,6 +160,7 @@ export default function CustomizeOrder() {
                 onClick={() => setQuantity(quantity + 1)}
                 className="w-10 h-10 rounded-full flex items-center justify-center text-primary bg-secondary-container hover:bg-primary-fixed transition-colors"
                 id="increase-quantity"
+                aria-label="Increase quantity"
               >
                 <Plus size={20} />
               </button>
@@ -187,8 +207,9 @@ export default function CustomizeOrder() {
 
         {/* Optional Note */}
         <section className="px-container mb-10 pb-8 lg:col-start-2 lg:row-start-4 lg:px-0 lg:mb-6 lg:pb-0">
-          <h3 className="text-xl font-bold text-on-surface mb-2 font-display">Add a Note <span className="text-sm font-normal text-on-surface-variant">(Optional)</span></h3>
+          <label htmlFor="order-note" className="block text-xl font-bold text-on-surface mb-2 font-display">Add a Note <span className="text-sm font-normal text-on-surface-variant">(Optional)</span></label>
           <textarea 
+            id="order-note"
             className="w-full rounded-xl border border-outline-variant bg-surface-container-lowest p-5 text-body-md text-on-surface focus:border-primary focus:ring-1 focus:ring-primary placeholder:text-outline resize-none transition-shadow" 
             placeholder="e.g. Leave at the front door..." 
             rows={2}
@@ -198,7 +219,10 @@ export default function CustomizeOrder() {
         <section className="hidden lg:flex lg:col-start-2 lg:row-start-5 items-center justify-between gap-8 rounded-3xl border border-surface-container-high bg-surface-container-lowest p-6 shadow-sm">
           <div className="flex flex-col">
             <span className="text-sm text-on-surface-variant font-medium">Total Price</span>
-            <span className="text-3xl font-bold text-on-surface">₹{product.price * quantity}</span>
+            <span className="text-3xl font-bold text-on-surface">₹{pricing.total}</span>
+            {pricing.subscriptionDiscount > 0 && (
+              <span className="text-xs font-semibold text-secondary">You save ₹{pricing.subscriptionDiscount}</span>
+            )}
           </div>
           <button
             onClick={handleAddToCart}
@@ -215,7 +239,10 @@ export default function CustomizeOrder() {
         <div className="flex items-center justify-between gap-6">
           <div className="flex flex-col">
             <span className="text-xs text-on-surface-variant font-medium">Total Price</span>
-            <span className="text-2xl font-bold text-on-surface">₹{product.price * quantity}</span>
+            <span className="text-2xl font-bold text-on-surface">₹{pricing.total}</span>
+            {pricing.subscriptionDiscount > 0 && (
+              <span className="text-xs font-semibold text-secondary">Save ₹{pricing.subscriptionDiscount}</span>
+            )}
           </div>
           <button 
             onClick={handleAddToCart}

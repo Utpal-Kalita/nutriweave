@@ -10,28 +10,28 @@ export default function HowItWorks() {
     { 
       id: 1, 
       label: 'Step 1', 
-      title: 'You tell us your priorities.', 
+      title: 'You rate five rice preferences.',
       icon: Sliders,
       active: false
     },
     { 
       id: 2, 
       label: 'Step 2', 
-      title: 'Our algorithm finds your balance.', 
+      title: 'The workbook rule compares nutrition and taste.',
       icon: Scale,
       active: false
     },
     { 
       id: 3, 
       label: 'Step 3', 
-      title: 'We mill your rice.', 
+      title: 'We identify a polishing level.',
       icon: Sprout,
       active: false
     },
     { 
       id: 4, 
       label: 'Step 4', 
-      title: 'Delivered fresh to you.', 
+      title: 'An approved matching product can be ordered.',
       icon: Truck,
       active: true
     },

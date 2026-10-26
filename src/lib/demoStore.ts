@@ -1,3 +1,5 @@
+import type { RecommendationAnswers, RecommendationLevel } from './recommendation';
+
 export interface DemoUser {
   id: string;
   email: string;
@@ -20,6 +22,12 @@ export interface DemoProfile {
   glycemic_priority: number;
   protein_priority: number;
   matched_level: number;
+  taste_priority?: number;
+  overall_nutrition_priority?: number;
+  recommendation_answers?: RecommendationAnswers;
+  recommendation_level?: RecommendationLevel;
+  recommendation_version?: string;
+  matched_product_id?: string | null;
   updated_at: string;
 }
 
@@ -30,6 +38,8 @@ export interface DemoProduct {
   price: number;
   image_url: string;
   level: number;
+  recommendation_level?: RecommendationLevel;
+  polishing_percentage?: 25 | 50 | 75;
 }
 
 export interface DemoOrder {

@@ -1,177 +1,256 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Wheat, Activity, Dumbbell, ArrowRight, Loader2 } from 'lucide-react';
+import { Activity, ArrowRight, Dumbbell, Gem, HeartPulse, Info, Loader2, Utensils } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useAuth } from '../contexts/AuthContext';
-import { ensureDemoProfile, saveDemoProfile } from '../lib/demoStore';
+import { ensureDemoProfile, getDemoProducts, saveDemoProfile } from '../lib/demoStore';
+import {
+  calculateRiceRecommendation,
+  mapRecommendationToProduct,
+  PREFERENCE_OPTIONS,
+  PreferenceScore,
+  RECOMMENDATION_QUESTIONS,
+  RecommendationAnswers,
+  RecommendationQuestionId,
+  RECOMMENDATION_ALGORITHM_VERSION,
+  validateRecommendationAnswers,
+} from '../lib/recommendation';
+
+const questionVisuals = {
+  protein: { icon: Dumbbell, color: 'bg-tertiary-container', accent: 'text-tertiary', bg: 'bg-tertiary-container/10' },
+  minerals: { icon: Gem, color: 'bg-primary-container', accent: 'text-primary', bg: 'bg-primary-container/10' },
+  gi: { icon: Activity, color: 'bg-secondary', accent: 'text-secondary', bg: 'bg-secondary-container/20' },
+  taste: { icon: Utensils, color: 'bg-amber-600', accent: 'text-amber-700', bg: 'bg-amber-100/60' },
+  overallNutrition: { icon: HeartPulse, color: 'bg-slate-700', accent: 'text-slate-700', bg: 'bg-slate-100' },
+} satisfies Record<RecommendationQuestionId, {
+  icon: typeof Dumbbell;
+  color: string;
+  accent: string;
+  bg: string;
+}>;
+
+function asPreferenceScore(value: number | undefined): PreferenceScore | undefined {
+  return value === 1 || value === 2 || value === 3 ? value : undefined;
+}
 
 export default function PrioritySelection() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [priorities, setPriorities] = useState({
-    minerals: 2,
-    glycemic: 3,
-    protein: 1
-  });
+  const [submitting, setSubmitting] = useState(false);
+  const [answers, setAnswers] = useState<Partial<RecommendationAnswers>>({});
+  const [errors, setErrors] = useState<Partial<Record<RecommendationQuestionId, string>>>({});
+  const [submissionError, setSubmissionError] = useState<string | null>(null);
 
-  const cards = [
-    {
-      id: 'minerals',
-      title: 'Minerals',
-      subtitle: 'Strength inside',
-      description: 'Iron, Zinc, and Magnesium to support daily bodily functions.',
-      icon: Wheat,
-      color: 'bg-primary-container',
-      accent: 'text-primary',
-      bg: 'bg-primary-container/10'
-    },
-    {
-      id: 'glycemic',
-      title: 'Glycemic Control',
-      subtitle: 'Steady energy',
-      description: 'Helps manage sugar spikes and maintain consistent energy levels.',
-      icon: Activity,
-      color: 'bg-secondary-container',
-      accent: 'text-secondary',
-      bg: 'bg-secondary-container/20'
-    },
-    {
-      id: 'protein',
-      title: 'Protein',
-      subtitle: 'Daily strength',
-      description: 'Supports muscle recovery and promotes a feeling of fullness.',
-      icon: Dumbbell,
-      color: 'bg-tertiary-container',
-      accent: 'text-tertiary',
-      bg: 'bg-tertiary-container/10'
+  useEffect(() => {
+    if (!user) return;
+
+    const profile = ensureDemoProfile(user);
+    if (profile.recommendation_answers) {
+      setAnswers(profile.recommendation_answers);
+      return;
     }
-  ];
 
-  const updatePriority = (id: string, val: number) => {
-    setPriorities(prev => ({ ...prev, [id]: val }));
+    // Preserve existing preferences while requiring the two newly introduced answers.
+    setAnswers({
+      protein: asPreferenceScore(profile.protein_priority),
+      minerals: asPreferenceScore(profile.minerals_priority),
+      gi: asPreferenceScore(profile.glycemic_priority),
+    });
+  }, [user]);
+
+  const updateAnswer = (id: RecommendationQuestionId, value: PreferenceScore) => {
+    setAnswers((current) => ({ ...current, [id]: value }));
+    setErrors((current) => {
+      const next = { ...current };
+      delete next[id];
+      return next;
+    });
+    setSubmissionError(null);
   };
 
-  const handleSaveAndMatch = async () => {
-    if (user) {
-      setLoading(true);
-      try {
-        const sum = priorities.minerals + priorities.glycemic + priorities.protein;
-        // Map sum [3, 9] to level [10, 1]
-        const matchedLevel = Math.max(1, Math.min(10, Math.round(10 - (sum - 3) * 1.5)));
-
-        const profile = ensureDemoProfile(user);
-        saveDemoProfile({
-          ...profile,
-          id: user.id,
-          email: user.email,
-          full_name: user.user_metadata.full_name,
-          minerals_priority: priorities.minerals,
-          glycemic_priority: priorities.glycemic,
-          protein_priority: priorities.protein,
-          matched_level: matchedLevel,
-          updated_at: new Date().toISOString()
-        });
-      } catch (err) {
-        console.error('Error saving priorities:', err);
-      } finally {
-        setLoading(false);
-      }
+  const handleSaveAndMatch = () => {
+    if (!user) {
+      navigate('/auth', { state: { from: { pathname: '/priority' } } });
+      return;
     }
-    navigate('/match');
+
+    const validation = validateRecommendationAnswers(answers);
+    setSubmissionError(null);
+    if (!validation.valid) {
+      setErrors(validation.errors);
+      const firstInvalidQuestion = RECOMMENDATION_QUESTIONS.find((question) => validation.errors[question.id]);
+      document.getElementById(`question-${firstInvalidQuestion?.id}`)?.focus();
+      return;
+    }
+
+    setSubmitting(true);
+
+    try {
+      const completeAnswers = answers as RecommendationAnswers;
+      const result = calculateRiceRecommendation(completeAnswers);
+      const matchedProduct = mapRecommendationToProduct(getDemoProducts(), result.level);
+      const profile = ensureDemoProfile(user);
+
+      saveDemoProfile({
+        ...profile,
+        id: user.id,
+        email: user.email,
+        full_name: user.user_metadata.full_name,
+        protein_priority: completeAnswers.protein,
+        minerals_priority: completeAnswers.minerals,
+        glycemic_priority: completeAnswers.gi,
+        taste_priority: completeAnswers.taste,
+        overall_nutrition_priority: completeAnswers.overallNutrition,
+        matched_level: result.level,
+        recommendation_answers: completeAnswers,
+        recommendation_level: result.level,
+        recommendation_version: RECOMMENDATION_ALGORITHM_VERSION,
+        matched_product_id: matchedProduct?.id ?? null,
+        updated_at: new Date().toISOString(),
+      });
+
+      navigate('/match');
+    } catch (error) {
+      console.error('Error saving recommendation:', error);
+      setSubmissionError('We could not save your answers. Please try again.');
+      setSubmitting(false);
+    }
   };
+
+  const answeredCount = Object.values(answers).filter((value) => value !== undefined).length;
 
   return (
-    <div className="flex flex-col min-h-full bg-surface">
-      <main className="flex-1 w-full max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 pt-6 lg:pt-12 pb-40 lg:pb-8 flex flex-col gap-8 lg:gap-10">
-        {/* Progress Header */}
-        <div className="flex items-center gap-2 mb-2">
-          <div className="h-1.5 flex-1 bg-primary rounded-full"></div>
-          <div className="h-1.5 flex-1 bg-surface-container-highest rounded-full"></div>
-          <div className="h-1.5 flex-1 bg-surface-container-highest rounded-full"></div>
+    <div className="flex min-h-full flex-col bg-surface">
+      <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-8 px-5 pb-40 pt-6 sm:px-8 lg:gap-10 lg:px-10 lg:pb-8 lg:pt-12">
+        <div>
+          <div className="mb-3 flex items-center justify-between text-xs font-bold uppercase tracking-widest text-on-surface-variant">
+            <span>Your rice preferences</span>
+            <span>{answeredCount} of 5 answered</span>
+          </div>
+          <div className="h-2 overflow-hidden rounded-full bg-surface-container-highest" aria-hidden="true">
+            <div className="h-full rounded-full bg-primary transition-[width]" style={{ width: `${answeredCount * 20}%` }} />
+          </div>
         </div>
 
-        {/* Header Section */}
-        <div className="flex flex-col gap-2 max-w-2xl">
-          <h1 className="text-3xl font-bold text-on-surface font-display leading-tight lg:text-5xl">Tell us what matters most</h1>
-          <p className="text-base text-on-surface-variant leading-relaxed lg:text-lg">
-            Rate each priority to help our algorithm find your perfect match.
+        <div className="max-w-3xl">
+          <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-primary">Five quick questions</p>
+          <h1 className="font-display text-3xl font-bold leading-tight text-on-surface lg:text-5xl">What matters in your everyday rice?</h1>
+          <p className="mt-4 text-base leading-relaxed text-on-surface-variant lg:text-lg">
+            Choose one answer for every question. You can change any response before viewing your match.
           </p>
         </div>
 
-        {/* Cards Container */}
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:gap-6">
-          {cards.map((card, index) => {
-            const currentVal = priorities[card.id as keyof typeof priorities];
+        <div className="grid gap-3 rounded-2xl border border-primary/10 bg-primary/5 p-4 sm:grid-cols-3">
+          {PREFERENCE_OPTIONS.map((option) => (
+            <div key={option.value} className="flex items-start gap-3">
+              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary font-bold text-white">{option.value}</span>
+              <div>
+                <p className="text-sm font-bold text-on-surface">{option.label}</p>
+                <p className="text-xs text-on-surface-variant">{option.description}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-950">
+          <Info className="mt-0.5 shrink-0" size={20} aria-hidden="true" />
+          <p className="text-sm leading-relaxed">
+            <strong>Provisional method:</strong> your overall nutritional value answer is collected and saved, but the verified workbook rule currently uses only protein, minerals, blood sugar response, and taste. It does not yet affect this match.
+          </p>
+        </div>
+
+        {Object.values(errors).some(Boolean) && (
+          <div className="rounded-2xl border border-error/20 bg-error-container p-4 text-sm font-semibold text-on-error-container" role="alert">
+            Answer all five questions before viewing your provisional match.
+          </div>
+        )}
+
+        {submissionError && (
+          <div className="rounded-2xl border border-error/20 bg-error-container p-4 text-sm font-semibold text-on-error-container" role="alert">
+            {submissionError}
+          </div>
+        )}
+
+        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+          {RECOMMENDATION_QUESTIONS.map((question, index) => {
+            const visual = questionVisuals[question.id];
+            const Icon = visual.icon;
+            const currentValue = answers[question.id];
+
             return (
-              <motion.div 
-                key={card.id}
-                initial={{ x: 20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: 0.1 * index }}
-                className="bg-surface-container-lowest rounded-3xl shadow-sm p-5 lg:p-6 flex flex-col gap-6 relative overflow-hidden border border-surface-container-high"
+              <motion.fieldset
+                key={question.id}
+                id={`question-${question.id}`}
+                tabIndex={-1}
+                aria-labelledby={`question-title-${question.id}`}
+                initial={{ y: 18, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                transition={{ delay: index * 0.05 }}
+                className={`relative overflow-hidden rounded-3xl border bg-surface-container-lowest p-5 shadow-sm outline-none lg:p-6 ${
+                  errors[question.id] ? 'border-error ring-1 ring-error/20' : 'border-surface-container-high'
+                } ${question.id === 'overallNutrition' ? 'lg:col-span-2' : ''}`}
               >
-                <div className={`absolute top-0 right-0 w-32 h-32 ${card.bg} rounded-bl-[100px] pointer-events-none transition-all`}></div>
-                
-                <div className="flex justify-between items-start z-10">
-                  <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-full ${card.color} flex items-center justify-center text-white shadow-sm`}>
-                      <card.icon size={20} fill="currentColor" />
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-bold text-on-surface font-display">{card.title}</h2>
-                      <p className={`text-sm ${card.accent} font-semibold uppercase tracking-wide`}>{card.subtitle}</p>
-                    </div>
+                <div className={`pointer-events-none absolute right-0 top-0 h-32 w-32 rounded-bl-[100px] ${visual.bg}`} />
+                <div className="relative z-10 flex items-start gap-4">
+                  <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white shadow-sm ${visual.color}`}>
+                    <Icon size={21} aria-hidden="true" />
                   </div>
-                  <div className="bg-surface-container px-3 py-1 rounded-full">
-                    <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-widest leading-none">
-                      Current: {currentVal}
-                    </span>
+                  <div className="min-w-0 pr-8">
+                    <span className={`text-xs font-bold uppercase tracking-widest ${visual.accent}`}>{question.label}</span>
+                    <h2 id={`question-title-${question.id}`} className="mt-1 font-display text-xl font-bold leading-snug text-on-surface">{question.question}</h2>
+                    <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">{question.supportingText}</p>
                   </div>
                 </div>
 
-                <p className="text-sm text-on-surface-variant z-10 leading-relaxed font-sans pr-12 lg:pr-0 lg:min-h-16">
-                  {card.description}
-                </p>
-
-                {/* 3-Step Segmented Control */}
-                <div className="bg-surface-container rounded-full p-1 flex justify-between items-center z-10">
-                  {[1, 2, 3].map((val) => (
-                    <button
-                      key={val}
-                      onClick={() => updatePriority(card.id, val)}
-                      className={`flex-1 py-3 rounded-full font-display font-semibold text-base transition-all ${
-                        currentVal === val 
-                          ? `bg-surface-container-lowest ${card.accent} shadow-md scale-[1.02]` 
-                          : 'text-on-surface-variant hover:text-on-surface'
-                      }`}
-                      id={`priority-${card.id}-${val}`}
-                    >
-                      {val}
-                    </button>
-                  ))}
+                <div className="relative z-10 mt-6 grid gap-2 sm:grid-cols-3">
+                  {PREFERENCE_OPTIONS.map((option) => {
+                    const selected = currentValue === option.value;
+                    return (
+                      <button
+                        key={option.value}
+                        type="button"
+                        onClick={() => updateAnswer(question.id, option.value)}
+                        aria-pressed={selected}
+                        className={`rounded-2xl border px-3 py-3 text-left transition-all ${
+                          selected
+                            ? 'border-primary bg-primary text-white shadow-md shadow-primary/15'
+                            : 'border-surface-container-high bg-surface-container-low text-on-surface hover:border-primary/40 hover:bg-white'
+                        }`}
+                      >
+                        <span className="block text-sm font-bold">{option.label}</span>
+                        <span className={`mt-0.5 block text-xs ${selected ? 'text-white/75' : 'text-on-surface-variant'}`}>{option.description}</span>
+                      </button>
+                    );
+                  })}
                 </div>
-              </motion.div>
+
+                {errors[question.id] && (
+                  <p className="relative z-10 mt-3 text-sm font-semibold text-error">{errors[question.id]}</p>
+                )}
+              </motion.fieldset>
             );
           })}
         </div>
       </main>
 
-      {/* Fixed Bottom CTA */}
-      <div className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/80 backdrop-blur-xl border-t border-surface-container p-6 z-50 lg:static lg:w-full lg:max-w-7xl lg:bg-transparent lg:border-0 lg:px-10 lg:pt-0 lg:pb-12 lg:backdrop-blur-none">
-        <button 
-          onClick={handleSaveAndMatch}
-          disabled={loading}
-          className="w-full h-14 bg-primary text-on-primary font-display font-semibold rounded-full shadow-[0px_8px_20px_rgba(19,85,41,0.25)] active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-70 lg:w-auto lg:min-w-64 lg:ml-auto"
-          id="see-recommended-button"
-        >
-          {loading ? <Loader2 className="animate-spin" size={24} /> : (
-            <>
-              See My Match
-              <ArrowRight size={20} />
-            </>
-          )}
-        </button>
+      <div className="fixed inset-x-0 bottom-0 z-50 mx-auto max-w-md border-t border-surface-container bg-white/90 p-6 backdrop-blur-xl lg:static lg:w-full lg:max-w-7xl lg:border-0 lg:bg-transparent lg:px-10 lg:pb-12 lg:pt-0 lg:backdrop-blur-none">
+        <div className="flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center">
+          <p className="hidden text-sm text-on-surface-variant lg:block">Your result will use the current four-input workbook rule.</p>
+          <button
+            type="button"
+            onClick={handleSaveAndMatch}
+            disabled={submitting}
+            className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-primary font-display font-semibold text-on-primary shadow-[0px_8px_20px_rgba(19,85,41,0.25)] transition-all active:scale-95 disabled:opacity-70 lg:ml-auto lg:w-auto lg:min-w-72 lg:px-8"
+            id="see-recommended-button"
+          >
+            {submitting ? <Loader2 className="animate-spin" size={24} /> : (
+              <>
+                View Provisional Match
+                <ArrowRight size={20} />
+              </>
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );
