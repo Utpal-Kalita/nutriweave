@@ -6,8 +6,8 @@ export default function NotFound() {
 
   return (
     <div className="flex min-h-[calc(100vh-5rem)] items-center justify-center bg-surface px-5 py-16">
-      <div className="w-full max-w-lg rounded-[32px] border border-surface-container-high bg-white p-8 text-center shadow-sm sm:p-12">
-        <span className="font-display text-sm font-bold uppercase tracking-[0.2em] text-primary">404</span>
+      <div className="w-full max-w-lg border-y-2 border-rule-2 bg-paper-2 p-8 text-center sm:p-12">
+        <span className="font-outlier text-sm tabular-nums text-muted">404</span>
         <h1 className="mt-3 font-display text-4xl font-bold text-on-surface">This page is not on the menu</h1>
         <p className="mx-auto mt-4 max-w-md leading-relaxed text-on-surface-variant">
           The address may be outdated, or the page may have moved. Return to Nutrifibe and continue your nutrition journey.
@@ -16,7 +16,7 @@ export default function NotFound() {
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="flex h-12 items-center justify-center gap-2 rounded-full border border-outline-variant px-6 font-semibold text-on-surface transition-colors hover:bg-surface-container-low"
+            className="editorial-action editorial-action--quiet"
           >
             <ArrowLeft size={18} />
             Go back
@@ -24,7 +24,7 @@ export default function NotFound() {
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="flex h-12 items-center justify-center gap-2 rounded-full bg-primary px-6 font-semibold text-white shadow-lg shadow-primary/20 transition-colors hover:bg-primary-container"
+            className="editorial-action"
           >
             <Home size={18} />
             Go home

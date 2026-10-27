@@ -27,10 +27,10 @@ export default function AdminLayout() {
               <Link
                 key={item.name}
                 to={item.path}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors font-medium ${
+                className={`flex items-center gap-3 border-l-2 px-4 py-3 font-medium transition-colors ${
                   isActive
-                    ? 'bg-primary text-white'
-                    : 'text-on-surface-variant hover:bg-surface-container hover:text-on-surface'
+                    ? 'border-accent bg-paper-2 text-ink'
+                    : 'border-transparent text-ink-2 hover:bg-paper-2 hover:text-ink'
                 }`}
               >
                 {item.icon}
@@ -42,7 +42,7 @@ export default function AdminLayout() {
         <div className="p-4 border-t border-surface-container-high">
           <button
             onClick={() => signOut()}
-            className="flex items-center gap-3 px-4 py-3 w-full text-left text-error hover:bg-error-container rounded-xl transition-colors font-medium"
+            className="flex w-full items-center gap-3 border-l-2 border-transparent px-4 py-3 text-left font-medium text-error transition-colors hover:border-error hover:bg-error-container"
           >
             <LogOut size={20} />
             Sign Out

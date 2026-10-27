@@ -1,125 +1,143 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Activity, Dumbbell, Gem, HeartPulse, Utensils } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { ArrowRight, Leaf, Activity, Dumbbell, Beaker, HeartPulse, Utensils } from 'lucide-react';
-import { motion } from 'motion/react';
+import harvestPhoto from '../assets/hallmark/woman-harvesting-wheat-raisen-district-madhya-pradesh-india--1920.jpg';
 
-const welcomeImage = "https://images.unsplash.com/photo-1586201375761-83865001e31c?q=80&w=2070&auto=format&fit=crop";
+const ricePhoto = 'https://images.unsplash.com/photo-1586201375761-83865001e31c?q=85&w=1800&auto=format&fit=crop';
+
+const preferences = [
+  { label: 'Protein', icon: Dumbbell },
+  { label: 'Minerals', icon: Gem },
+  { label: 'Blood sugar response', icon: Activity },
+  { label: 'Taste and texture', icon: Utensils },
+  { label: 'Nutritional', icon: HeartPulse },
+] as const;
+
+const levels = [
+  { level: 'Level 1', polish: '25% polishing', note: 'Nutrition preference leads', tone: 'bg-leaf text-paper' },
+  { level: 'Level 2', polish: '50% polishing', note: 'Preferences are balanced', tone: 'bg-harvest text-ink' },
+  { level: 'Level 3', polish: '75% polishing', note: 'Soft texture preference leads', tone: 'bg-sky text-ink' },
+] as const;
 
 export default function Welcome() {
   const navigate = useNavigate();
   const { user } = useAuth();
 
-  const handleStart = () => {
-    if (user) {
-      navigate('/priority');
-    } else {
-      navigate('/auth');
-    }
-  };
+  const handleStart = () => navigate(user ? '/priority' : '/auth');
 
   return (
-    <div className="flex flex-col min-h-screen bg-surface-container-lowest lg:grid lg:grid-cols-[minmax(0,0.9fr)_minmax(520px,1.1fr)]">
-      {/* Top Half: Hero Image */}
-      <div className="relative h-[48vh] w-full shrink-0 lg:order-2 lg:h-screen">
-        <img 
-          className="w-full h-full object-cover" 
-          src={welcomeImage} 
-          alt="Golden rice grains in bowl"
-        />
-        <div className="absolute inset-0 bg-[#A67B5B]/20 mix-blend-multiply"></div>
-        <div className="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/40 to-transparent lg:bg-gradient-to-r lg:from-surface-container-lowest/35 lg:via-transparent lg:to-transparent"></div>
-      </div>
-
-      {/* Bottom Half: Content Card */}
-      <motion.div 
-        initial={{ y: 50, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.2 }}
-        className="flex-1 bg-surface-container-lowest flex flex-col px-container py-8 relative z-10 -mt-10 rounded-t-[32px] shadow-[0px_-8px_24px_rgba(0,0,0,0.06)] lg:order-1 lg:m-0 lg:justify-center lg:rounded-none lg:px-12 xl:px-20 lg:py-16 lg:shadow-none"
-      >
-        <div className="w-full max-w-xl mx-auto">
-        {/* Branding */}
-        <div className="flex items-center justify-between gap-4 mb-4 lg:mb-8">
-          <div className="flex items-center gap-1">
-            <Leaf className="text-primary w-6 h-6 fill-primary" />
-            <span className="font-display text-xl font-semibold text-primary tracking-tight">Nutrifibe</span>
-          </div>
-          <button
-            onClick={() => navigate(user ? '/match' : '/auth')}
-            className="rounded-full px-4 py-2 text-sm font-bold text-primary transition-colors hover:bg-secondary-container/40"
-          >
-            {user ? 'My Match' : 'Sign In'}
+    <div className="min-h-dvh bg-paper text-ink">
+      <header className="bg-ink text-paper">
+        <div className="container flex h-20 items-center justify-between">
+          <button type="button" onClick={() => navigate('/')} className="font-display text-3xl font-extrabold" aria-label="Nutrifibe home">
+            Nutrifibe
           </button>
+          <nav className="flex items-center gap-4 sm:gap-7" aria-label="Welcome navigation">
+            <button type="button" onClick={() => navigate('/how-it-works')} className="hidden text-sm font-bold text-paper-2 hover:text-paper sm:block">
+              How it works
+            </button>
+            <button type="button" onClick={() => navigate(user ? '/match' : '/auth')} className="rounded-pill bg-harvest px-5 py-2.5 text-sm font-bold text-ink hover:bg-paper">
+              {user ? 'My match' : 'Sign in'}
+            </button>
+          </nav>
         </div>
+      </header>
 
-        {/* Title */}
-        <div className="mb-8 lg:mb-12">
-          <h1 className="text-4xl font-bold text-on-surface mb-3 leading-tight lg:text-5xl xl:text-6xl">
-            Not just rice.<br/>Rice, made for you.
-          </h1>
-          <p className="text-lg text-on-surface-variant max-w-[90%] leading-relaxed lg:text-xl lg:max-w-lg">
-            Personalized nutrition in every grain, built around your goals.
+      <main>
+        <section className="bg-harvest">
+          <div className="container grid min-h-[calc(100dvh-var(--nav-height))] items-center gap-10 py-10 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-16 lg:py-14">
+            <div className="min-w-0 py-5">
+              <h1 className="text-display font-extrabold">Protein rice, matched to your table.</h1>
+              <p className="lead mt-6 max-w-[48ch]">Five answers balance nutrition preferences with the texture your family likes.</p>
+              <div className="mt-9 flex flex-col gap-3 sm:flex-row">
+                <button type="button" onClick={handleStart} className="editorial-action bg-ink text-paper" id="get-started-button">
+                  Find my rice level
+                </button>
+                <button type="button" onClick={() => navigate('/how-it-works')} className="editorial-action editorial-action--quiet">
+                  See how matching works
+                </button>
+              </div>
+
+              <div className="mt-10 flex flex-wrap gap-2" aria-label="Questionnaire topics">
+                {preferences.map(({ label, icon: Icon }) => (
+                  <span key={label} className="flex items-center gap-2 rounded-pill border border-ink/20 bg-paper/55 px-3 py-2 text-sm font-bold">
+                    <Icon size={18} strokeWidth={2} aria-hidden="true" />
+                    {label}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <figure className="min-w-0">
+              <div className="relative min-h-[440px] overflow-hidden rounded-[3rem] border-[10px] border-paper shadow-card lg:min-h-[650px]" data-slot="hero-rice" data-alt="A close photograph of cooked Nutriweave protein rice">
+                <img src={ricePhoto} width="1800" height="1200" alt="A bowl filled with cooked rice" className="absolute inset-0 h-full w-full object-cover" fetchPriority="high" />
+                <span data-keep className="absolute bottom-5 left-5 z-10 rounded-pill bg-paper px-4 py-2 text-sm font-bold text-ink">Five-question match</span>
+              </div>
+            </figure>
+          </div>
+        </section>
+
+        <section className="container py-[var(--section-gap)]">
+          <div className="grid gap-10 lg:grid-cols-[minmax(0,0.7fr)_minmax(0,1.3fr)] lg:items-end lg:gap-16">
+            <div>
+              <h2>One quiz. Three rice levels.</h2>
+              <p className="lead mt-5">The workbook compares your strongest nutrition preference with taste and texture.</p>
+            </div>
+            <div className="grid gap-4 md:grid-cols-3">
+              {levels.map((item) => (
+                <article key={item.level} className={`${item.tone} min-h-64 rounded-card p-6 shadow-card`}>
+                  <span className="font-outlier text-sm tabular-nums">{item.polish}</span>
+                  <h3 className="mt-8 text-3xl">{item.level}</h3>
+                  <p className="mt-3 text-base">{item.note}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-leaf text-paper">
+          <div className="container grid items-center gap-10 py-[var(--section-gap-s)] lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-16">
+            <figure className="min-w-0">
+              <div className="relative min-h-[360px] overflow-hidden rounded-card border-8 border-paper/15 lg:min-h-[500px]" data-slot="harvest" data-alt="Nutriweave rice cultivation or harvest in India">
+                <img src={harvestPhoto} width="1920" height="1344" alt="A woman carrying harvested grain in Raisen district, Madhya Pradesh" className="absolute inset-0 h-full w-full object-cover object-[25%_55%]" loading="lazy" />
+              </div>
+              <figcaption className="mt-3 text-sm text-paper-2">Harvest work in Raisen district, Madhya Pradesh.</figcaption>
+            </figure>
+            <div>
+              <h2 className="text-paper">Preference first. Evidence kept separate.</h2>
+              <p className="lead mt-6 text-paper-2">Your answers guide the polishing-level comparison. They never stand in for measured product nutrition.</p>
+              <button type="button" onClick={() => navigate('/impact')} className="mt-8 rounded-pill bg-paper px-6 py-3 font-bold text-ink hover:bg-harvest">
+                Read the evidence status
+              </button>
+            </div>
+          </div>
+        </section>
+
+        <section className="bg-sky">
+          <div className="container flex flex-col items-start justify-between gap-7 py-[var(--section-gap-s)] lg:flex-row lg:items-center">
+            <div>
+              <h2>Ready to find your level?</h2>
+              <p className="lead mt-4">Five clear answers. One provisional match.</p>
+            </div>
+            <button type="button" onClick={handleStart} className="editorial-action bg-ink text-paper">
+              Start the recommender
+            </button>
+          </div>
+        </section>
+      </main>
+
+      <footer className="bg-ink py-12 text-paper">
+        <div className="container grid gap-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+          <div>
+            <p className="font-display text-3xl font-extrabold">Nutrifibe</p>
+            <p className="mt-2 text-sm text-paper-2">Protein rice by Arnatattva LLP.</p>
+          </div>
+          <p className="max-w-xl text-sm text-paper-2" data-credits>
+            Harvest photograph: <a className="underline" href="https://commons.wikimedia.org/wiki/File:Woman_harvesting_wheat,_Raisen_district,_Madhya_Pradesh,_India_ggia_version.jpg" target="_blank" rel="noreferrer">Yann Forget</a>, CC BY-SA 3.0. Rice image is a replaceable stand-in.
           </p>
         </div>
-
-        {/* Features Bento Row */}
-        <div className="grid grid-cols-3 gap-3 mb-10 lg:gap-4">
-          <div className="bg-surface rounded-2xl p-4 flex flex-col items-center justify-center border border-surface-container shadow-sm lg:min-h-32">
-            <div className="w-10 h-10 rounded-full bg-secondary-container/50 flex items-center justify-center mb-2 text-on-secondary-container">
-              <Beaker size={20} />
-            </div>
-            <span className="text-xs font-bold uppercase tracking-wider text-on-surface-variant text-center">Minerals</span>
-          </div>
-          
-          <div className="bg-surface rounded-2xl p-4 flex flex-col items-center justify-center border border-surface-container shadow-sm lg:min-h-32">
-            <div className="w-10 h-10 rounded-full bg-primary-container/20 flex items-center justify-center mb-2 text-primary">
-              <Activity size={20} />
-            </div>
-            <span className="text-xs font-bold uppercase tracking-wider text-on-surface-variant text-center leading-tight">Glycemic<br/>Control</span>
-          </div>
-
-          <div className="bg-surface rounded-2xl p-4 flex flex-col items-center justify-center border border-surface-container shadow-sm lg:min-h-32">
-            <div className="w-10 h-10 rounded-full bg-tertiary-container/20 flex items-center justify-center mb-2 text-tertiary">
-              <Dumbbell size={20} fill="currentColor" />
-            </div>
-            <span className="text-xs font-bold uppercase tracking-wider text-on-surface-variant text-center">Protein</span>
-          </div>
-
-          <div className="bg-surface rounded-2xl p-4 flex flex-col items-center justify-center border border-surface-container shadow-sm lg:min-h-32">
-            <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center mb-2 text-amber-700">
-              <Utensils size={20} />
-            </div>
-            <span className="text-xs font-bold uppercase tracking-wider text-on-surface-variant text-center">Taste</span>
-          </div>
-
-          <div className="bg-surface rounded-2xl p-4 flex flex-col items-center justify-center border border-surface-container shadow-sm lg:min-h-32">
-            <div className="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center mb-2 text-slate-700">
-              <HeartPulse size={20} />
-            </div>
-            <span className="text-xs font-bold uppercase tracking-wider text-on-surface-variant text-center">Overall</span>
-          </div>
-        </div>
-
-        {/* CTA Action */}
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <button
-            onClick={handleStart}
-            className="w-full h-14 bg-primary text-on-primary rounded-full flex items-center justify-center gap-2 font-display font-semibold shadow-[0px_8px_20px_rgba(47,110,63,0.2)] active:scale-[0.98] transition-all sm:w-auto sm:min-w-56 sm:px-8"
-            id="get-started-button"
-          >
-            Get Started
-            <ArrowRight size={20} />
-          </button>
-          <button
-            onClick={() => navigate('/how-it-works')}
-            className="h-14 rounded-full border border-outline-variant bg-white px-7 font-display font-semibold text-primary transition-colors hover:bg-surface-container-low"
-          >
-            How it works
-          </button>
-        </div>
-        </div>
-      </motion.div>
+      </footer>
     </div>
   );
 }

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'motion/react';
-import { Mail, Lock, Loader2, ArrowRight, Github, Eye, EyeOff } from 'lucide-react';
+import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function Auth() {
@@ -17,145 +16,124 @@ export default function Auth() {
   const requestedPath = (location.state as { from?: { pathname?: string } } | null)?.from?.pathname;
   const destination = requestedPath && requestedPath !== '/auth' ? requestedPath : '/priority';
 
-  const handleAuth = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAuth = async (event: React.FormEvent) => {
+    event.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
       await signIn(email, password);
       navigate(destination, { replace: true });
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Demo login failed');
+    } catch (authError) {
+      setError(authError instanceof Error ? authError.message : 'Demo login failed. Check the fields and try again.');
       setLoading(false);
     }
   };
 
-  return (
-    <div className="flex-1 flex flex-col justify-center bg-[#F7F3EA] px-6 pt-12 pb-24 lg:py-16">
-      <div className="max-w-md mx-auto w-full lg:max-w-lg lg:rounded-[32px] lg:border lg:border-[#EFE8D8] lg:bg-white lg:p-10 lg:shadow-xl lg:shadow-black/5">
-        <motion.div
-           initial={{ y: 20, opacity: 0 }}
-           animate={{ y: 0, opacity: 1 }}
-           className="text-center mb-10"
-        >
-          <div className="w-16 h-16 bg-primary rounded-2xl flex items-center justify-center text-white mx-auto mb-6 shadow-xl shadow-primary/20">
-            <Lock size={32} />
-          </div>
-          <h1 className="text-3xl font-bold text-on-surface font-display mb-2">
-            {mode === 'login' ? 'Welcome Back' : 'Create Account'}
-          </h1>
-          <p className="text-on-surface-variant">
-            {mode === 'login' 
-              ? 'Enter any email and password to start the client demo' 
-              : 'Any email and password creates a browser-only demo account'}
-          </p>
-        </motion.div>
+  const handleDemoLogin = async () => {
+    setLoading(true);
+    setError(null);
+    await signIn(email || 'demo@nutrifibe.local', password || 'demo');
+    navigate(destination, { replace: true });
+  };
 
-        <form onSubmit={handleAuth} className="space-y-4">
-          <div>
-            <label htmlFor="email" className="mb-2 block text-sm font-semibold text-on-surface">Email address</label>
-            <div className="relative">
-              <Mail className="absolute left-4 top-1/2 -translate-y-1/2 text-outline" size={20} aria-hidden="true" />
-              <input
-                id="email"
-                type="email"
-                placeholder="you@example.com"
-                autoComplete="username"
-                className="w-full bg-white border border-surface-container-high rounded-2xl h-14 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
+  return (
+    <div className="container grid min-h-[calc(100dvh-var(--nav-height))] items-center gap-12 py-12 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-20">
+      <section className="min-w-0">
+        <h1 className="text-display-s">Your rice preferences start here.</h1>
+        <p className="lead mt-5">Sign in, answer five questions, and receive a provisional polishing level.</p>
+        <dl className="mt-10 overflow-hidden rounded-card bg-harvest/45 p-5">
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-6 border-b border-rule py-4">
+            <dt>Account type</dt>
+            <dd className="text-ink-2">Browser-only demo</dd>
           </div>
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-6 border-b border-rule py-4">
+            <dt>Recommendation</dt>
+            <dd className="text-ink-2">Workbook rule</dd>
+          </div>
+          <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-6 py-4">
+            <dt>Saved data</dt>
+            <dd className="text-ink-2">This browser</dd>
+          </div>
+        </dl>
+      </section>
+
+      <section className="rounded-card bg-sky p-6 shadow-card sm:p-10">
+        <h2 className="text-3xl">{mode === 'login' ? 'Sign in to Nutrifibe' : 'Create a demo account'}</h2>
+        <p className="mt-3 text-ink-2">
+          {mode === 'login' ? 'Any email and password restore or create a local demo profile.' : 'Your demo account remains on this device.'}
+        </p>
+
+        <form onSubmit={handleAuth} className="mt-8 space-y-5">
           <div>
-            <label htmlFor="password" className="mb-2 block text-sm font-semibold text-on-surface">Password</label>
+            <label htmlFor="email" className="mb-2 block text-sm font-medium">Email address</label>
+            <input
+              id="email"
+              name="email"
+              type="email"
+              placeholder="you@example.com"
+              autoComplete="username"
+                className="h-13 w-full rounded-2xl border border-ink/25 bg-paper px-4 text-base text-ink outline-2 outline-offset-[-3px] outline-transparent placeholder:text-muted hover:bg-paper-3 focus-visible:outline-focus"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              required
+            />
+          </div>
+
+          <div>
+            <label htmlFor="password" className="mb-2 block text-sm font-medium">Password</label>
             <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-outline" size={20} aria-hidden="true" />
               <input
                 id="password"
+                name="password"
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Enter any password"
                 autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                className="w-full bg-white border border-surface-container-high rounded-2xl h-14 pl-12 pr-12 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                className="h-13 w-full rounded-2xl border border-ink/25 bg-paper px-4 pr-14 text-base text-ink outline-2 outline-offset-[-3px] outline-transparent placeholder:text-muted hover:bg-paper-3 focus-visible:outline-focus"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(event) => setPassword(event.target.value)}
                 required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword((visible) => !visible)}
-                className="absolute right-2 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-outline transition-colors hover:bg-surface-container hover:text-primary"
+                className="absolute right-1 top-1 flex h-11 w-11 items-center justify-center rounded-pill text-muted hover:bg-paper-3 hover:text-ink"
                 aria-label={showPassword ? 'Hide password' : 'Show password'}
               >
-                {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
           </div>
 
-          <AnimatePresence>
-            {error && (
-              <motion.div 
-                initial={{ opacity: 0, height: 0 }}
-                animate={{ opacity: 1, height: 'auto' }}
-                exit={{ opacity: 0, height: 0 }}
-                className="bg-error-container text-on-error-container p-4 rounded-xl text-sm font-medium border border-error/10"
-              >
-                {error}
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {error && <p className="border-y border-error bg-error-container p-4 text-sm text-on-error-container" role="alert">{error}</p>}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-primary text-white h-14 rounded-full font-display font-bold shadow-lg shadow-primary/30 flex items-center justify-center gap-2 active:scale-[0.98] transition-all disabled:opacity-70 disabled:active:scale-100"
-          >
-            {loading ? (
-              <Loader2 className="animate-spin" size={24} />
-            ) : (
-              <>
-                {mode === 'login' ? 'Sign In' : 'Sign Up'}
-                <ArrowRight size={20} />
-              </>
-            )}
+          <button type="submit" disabled={loading} aria-busy={loading} className="editorial-action w-full">
+            {loading ? <Loader2 className="keep-motion animate-spin" size={20} aria-hidden="true" /> : null}
+            {loading ? 'Signing in' : mode === 'login' ? 'Sign in' : 'Create account'}
           </button>
         </form>
 
-        <div className="mt-8 flex items-center gap-4">
-          <div className="flex-1 h-px bg-surface-container-high"></div>
-          <span className="text-xs font-bold text-outline uppercase tracking-widest">or continue with</span>
-          <div className="flex-1 h-px bg-surface-container-high"></div>
+        <div className="my-7 flex items-center gap-4">
+          <div className="h-px flex-1 bg-rule" />
+          <span className="text-sm text-muted">Demo access</span>
+          <div className="h-px flex-1 bg-rule" />
         </div>
 
-        <div className="mt-6">
-          <button
-            type="button"
-            onClick={async () => {
-              setLoading(true);
-              await signIn(email || 'demo@nutrifibe.local', password || 'demo');
-              navigate(destination, { replace: true });
-            }}
-            className="w-full bg-white border border-surface-container-high text-on-surface h-14 rounded-full flex items-center justify-center gap-3 hover:bg-surface-container-low transition-colors active:scale-[0.98]"
-          >
-             <Github size={20} />
-             <span className="font-bold">Demo Login</span>
-          </button>
-        </div>
+        <button type="button" onClick={handleDemoLogin} disabled={loading} className="editorial-action editorial-action--quiet w-full">
+          Use demo account
+        </button>
 
-        <div className="mt-10 text-center">
-          <button 
-            onClick={() => {
-              setMode(mode === 'login' ? 'signup' : 'login');
-              setError(null);
-            }}
-            className="text-primary font-bold hover:underline"
-          >
-            {mode === 'login' ? "Don't have an account? Sign Up" : "Already have an account? Sign In"}
-          </button>
-        </div>
-      </div>
+        <button
+          type="button"
+          onClick={() => {
+            setMode(mode === 'login' ? 'signup' : 'login');
+            setError(null);
+          }}
+          className="mt-7 w-full text-center text-sm font-medium text-accent underline decoration-accent underline-offset-4"
+        >
+          {mode === 'login' ? 'Create a new demo account' : 'Use an existing demo account'}
+        </button>
+      </section>
     </div>
   );
 }

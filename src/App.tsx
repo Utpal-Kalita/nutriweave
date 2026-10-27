@@ -34,7 +34,7 @@ function AppLoading() {
     <div className="flex min-h-screen items-center justify-center bg-surface" role="status" aria-live="polite">
       <div className="flex flex-col items-center gap-4">
         <div className="h-10 w-10 animate-spin rounded-full border-4 border-surface-container-high border-t-primary" />
-        <span className="font-display text-sm font-semibold text-on-surface-variant">Loading Nutrifibe...</span>
+        <span className="font-display text-sm font-semibold text-on-surface-variant">Loading Nutrifibe…</span>
       </div>
     </div>
   );

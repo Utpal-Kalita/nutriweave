@@ -69,29 +69,50 @@ const riceImage = 'https://lh3.googleusercontent.com/aida-public/AB6AXuDOKYVkSAT
 const defaultProducts: DemoProduct[] = [
   {
     id: 'demo-product-1',
-    name: 'Nutrifibe Mineral Max Rice',
-    description: 'Iron, zinc, and magnesium focused blend for high nutrient goals.',
+    name: 'Nutrifibe Level 1 Protein Rice',
+    description: 'Demo product mapped to the 25% polishing variant. Nutritional measurements require verification.',
     price: 549,
     image_url: riceImage,
     level: 2,
+    recommendation_level: 1,
+    polishing_percentage: 25,
   },
   {
     id: 'demo-product-2',
-    name: 'Nutrifibe Balanced Core Rice',
-    description: 'Balanced daily nutrition with steady energy and familiar texture.',
+    name: 'Nutrifibe Level 2 Protein Rice',
+    description: 'Demo product mapped to the 50% polishing variant. Nutritional measurements require verification.',
     price: 499,
     image_url: riceImage,
     level: 5,
+    recommendation_level: 2,
+    polishing_percentage: 50,
   },
   {
     id: 'demo-product-3',
-    name: 'Nutrifibe Smart Comfort Rice',
-    description: 'Comfort-first rice with light functional nutrition for everyday meals.',
+    name: 'Nutrifibe Level 3 Protein Rice',
+    description: 'Demo product mapped to the 75% polishing variant. Nutritional measurements require verification.',
     price: 449,
     image_url: riceImage,
     level: 8,
+    recommendation_level: 3,
+    polishing_percentage: 75,
   },
 ];
+
+function applyDefaultProductMappings(products: DemoProduct[]) {
+  return products.map((product) => {
+    const defaultProduct = defaultProducts.find((item) => item.id === product.id);
+    if (!defaultProduct?.recommendation_level || !defaultProduct.polishing_percentage) return product;
+
+    return {
+      ...product,
+      name: defaultProduct.name,
+      description: defaultProduct.description,
+      recommendation_level: defaultProduct.recommendation_level,
+      polishing_percentage: defaultProduct.polishing_percentage,
+    };
+  });
+}
 
 const canUseStorage = () => typeof window !== 'undefined' && Boolean(window.localStorage);
 
@@ -218,10 +239,21 @@ export function saveDemoProfile(update: Partial<DemoProfile> & { id: string }) {
 
 export function getDemoProducts() {
   const products = readJson<DemoProduct[]>(PRODUCTS_KEY, []);
-  if (products.length > 0) return products;
+  if (products.length > 0) {
+    const migratedProducts = applyDefaultProductMappings(products);
+    const mappingChanged = migratedProducts.some((product, index) => (
+      product.recommendation_level !== products[index].recommendation_level
+      || product.polishing_percentage !== products[index].polishing_percentage
+      || product.name !== products[index].name
+      || product.description !== products[index].description
+    ));
+
+    if (mappingChanged) writeJson(PRODUCTS_KEY, migratedProducts);
+    return migratedProducts;
+  }
 
   writeJson(PRODUCTS_KEY, defaultProducts);
-  return defaultProducts;
+  return defaultProducts.map((product) => ({ ...product }));
 }
 
 export function getBestDemoProduct(matchedLevel: number) {

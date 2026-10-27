@@ -1,6 +1,9 @@
 export type PreferenceScore = 1 | 2 | 3;
 export type RecommendationLevel = 1 | 2 | 3;
 export type RecommendationQuestionId = 'protein' | 'minerals' | 'gi' | 'taste' | 'overallNutrition';
+export type NutritionalPriorityStrategy =
+  | typeof WORKBOOK_PRIORITY_STRATEGY
+  | typeof CANDIDATE_INCLUDE_NUTRITIONAL_STRATEGY;
 
 export interface RecommendationAnswers {
   protein: PreferenceScore;
@@ -24,9 +27,9 @@ export interface RecommendationResult {
   nutritionPriority: PreferenceScore;
   tastePriority: PreferenceScore;
   reason: string;
-  algorithmVersion: typeof RECOMMENDATION_ALGORITHM_VERSION;
+  algorithmVersion: NutritionalPriorityStrategy;
   isProvisional: true;
-  overallNutritionAffectsResult: false;
+  overallNutritionAffectsResult: boolean;
 }
 
 export interface RecommendationProduct {
@@ -34,10 +37,12 @@ export interface RecommendationProduct {
   recommendation_level?: RecommendationLevel;
 }
 
-export const RECOMMENDATION_ALGORITHM_VERSION = 'workbook-v1-four-input' as const;
+export const WORKBOOK_PRIORITY_STRATEGY = 'workbook-v1-four-input' as const;
+export const CANDIDATE_INCLUDE_NUTRITIONAL_STRATEGY = 'candidate-v2-include-nutritional-in-max' as const;
+export const RECOMMENDATION_ALGORITHM_VERSION = WORKBOOK_PRIORITY_STRATEGY;
 
 export const UNRESOLVED_OVERALL_NUTRITION_RULE =
-  'How should the Overall Nutritional Value answer influence the calculation of nutrition priority and the final recommendation?';
+  'Should Nutritional be included in nutritionalPriority = max(protein, minerals, gi, nutritional), or influence nutritional priority in another approved way?';
 
 // Keep customer-facing questionnaire copy here so wording can change without editing UI components.
 export const RECOMMENDATION_QUESTIONS: readonly RecommendationQuestion[] = [
@@ -67,9 +72,9 @@ export const RECOMMENDATION_QUESTIONS: readonly RecommendationQuestion[] = [
   },
   {
     id: 'overallNutrition',
-    label: 'Overall nutrition',
+    label: 'Nutritional',
     question: 'How important is overall nutritional value to you?',
-    supportingText: 'We save this answer, but it does not yet affect the provisional match.',
+    supportingText: 'This is recorded separately; how it affects the match is awaiting confirmation.',
   },
 ] as const;
 
@@ -125,28 +130,74 @@ export function calculateWorkbookRecommendation(
   return { level, nutritionPriority, tastePriority };
 }
 
-export function calculateRiceRecommendation(answers: RecommendationAnswers): RecommendationResult {
+export function calculateCandidateFiveQuestionRecommendation(answers: RecommendationAnswers) {
   const validation = validateRecommendationAnswers(answers);
   if (!validation.valid) {
     throw new TypeError('All five recommendation questions require a score from 1 to 3.');
   }
 
-  const workbookResult = calculateWorkbookRecommendation(answers);
-  const variant = RECOMMENDATION_VARIANTS[workbookResult.level];
-  const reason = workbookResult.level === 1
+  const nutritionPriority = Math.max(
+    answers.protein,
+    answers.minerals,
+    answers.gi,
+    answers.overallNutrition,
+  ) as PreferenceScore;
+  const tastePriority = answers.taste;
+  const level: RecommendationLevel = nutritionPriority > tastePriority
+    ? 1
+    : nutritionPriority < tastePriority
+      ? 3
+      : 2;
+
+  return { level, nutritionPriority, tastePriority };
+}
+
+export function calculateRiceRecommendation(
+  answers: RecommendationAnswers,
+  strategy: NutritionalPriorityStrategy = WORKBOOK_PRIORITY_STRATEGY,
+): RecommendationResult {
+  const validation = validateRecommendationAnswers(answers);
+  if (!validation.valid) {
+    throw new TypeError('All five recommendation questions require a score from 1 to 3.');
+  }
+
+  const priorityResult = strategy === CANDIDATE_INCLUDE_NUTRITIONAL_STRATEGY
+    ? calculateCandidateFiveQuestionRecommendation(answers)
+    : calculateWorkbookRecommendation(answers);
+  const variant = RECOMMENDATION_VARIANTS[priorityResult.level];
+  const reason = priorityResult.level === 1
     ? 'At least one nutrition preference is stronger than your preference for a soft, white-rice-like texture.'
-    : workbookResult.level === 3
+    : priorityResult.level === 3
       ? 'Your preference for a soft, white-rice-like texture is stronger than your highest nutrition preference.'
       : 'Your highest nutrition preference and your texture preference are equally important.';
 
   return {
-    ...workbookResult,
+    ...priorityResult,
     ...variant,
     reason,
-    algorithmVersion: RECOMMENDATION_ALGORITHM_VERSION,
+    algorithmVersion: strategy,
     isProvisional: true,
-    overallNutritionAffectsResult: false,
+    overallNutritionAffectsResult: strategy === CANDIDATE_INCLUDE_NUTRITIONAL_STRATEGY,
   };
+}
+
+export function generateFiveQuestionCombinations(): RecommendationAnswers[] {
+  const scores = [1, 2, 3] as const;
+  const combinations: RecommendationAnswers[] = [];
+
+  for (const protein of scores) {
+    for (const minerals of scores) {
+      for (const gi of scores) {
+        for (const taste of scores) {
+          for (const overallNutrition of scores) {
+            combinations.push({ protein, minerals, gi, taste, overallNutrition });
+          }
+        }
+      }
+    }
+  }
+
+  return combinations;
 }
 
 export function mapRecommendationToProduct<T extends RecommendationProduct>(

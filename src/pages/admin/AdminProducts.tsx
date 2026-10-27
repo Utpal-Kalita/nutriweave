@@ -20,11 +20,11 @@ export default function AdminProducts() {
     <div>
       <div className="flex flex-wrap justify-between items-center gap-4 mb-8">
         <h2 className="text-3xl font-bold font-display text-on-surface">Products</h2>
-        <span className="rounded-full bg-surface-container px-4 py-2 text-sm font-semibold text-on-surface-variant">Demo catalog</span>
+        <span className="border-y border-rule px-4 py-2 text-sm font-medium text-ink-2">Demo catalog</span>
       </div>
 
-      <div className="mb-6 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm leading-relaxed text-amber-950">
-        Products must have an explicit recommender variant mapping before they can be offered for a Level 1, 2, or 3 result. Legacy product levels are not treated as workbook recommendation levels.
+      <div className="mb-6 border-y border-rule bg-paper-2 p-4 text-sm leading-relaxed text-ink-2">
+        Demo products are explicitly mapped to workbook Levels 1, 2, and 3. Confirm these assignments against the production catalog before launch; legacy product levels are not used by the recommender.
       </div>
 
       {loading ? (
@@ -32,7 +32,7 @@ export default function AdminProducts() {
           <Loader2 className="animate-spin text-primary" size={32} />
         </div>
       ) : (
-        <div className="bg-white rounded-3xl border border-surface-container-high overflow-x-auto shadow-sm">
+        <div className="overflow-x-auto border-y-2 border-rule-2 bg-paper">
           <table className="w-full min-w-[860px] text-left">
             <thead className="bg-surface-container-lowest border-b border-surface-container-high text-on-surface-variant text-sm">
               <tr>
@@ -51,17 +51,17 @@ export default function AdminProducts() {
                   </td>
                   <td className="px-6 py-4 font-medium">₹{product.price}</td>
                   <td className="px-6 py-4">
-                    <span className="bg-secondary-container text-on-secondary-container px-2 py-1 rounded-md text-xs font-bold">
+                    <span className="border-y border-rule px-2 py-1 text-sm font-medium text-ink">
                       Level {product.level}
                     </span>
                   </td>
                   <td className="px-6 py-4">
                     {product.recommendation_level ? (
-                      <span className="rounded-md bg-primary/10 px-2 py-1 text-xs font-bold text-primary">
+                      <span className="border-y border-rule-2 px-2 py-1 text-sm font-medium text-ink">
                         Level {product.recommendation_level} · {product.polishing_percentage ? `${product.polishing_percentage}% polish` : 'polishing not set'}
                       </span>
                     ) : (
-                      <span className="rounded-md bg-surface-container px-2 py-1 text-xs font-bold text-on-surface-variant">Not mapped</span>
+                      <span className="border-y border-rule px-2 py-1 text-sm font-medium text-ink-2">Not mapped</span>
                     )}
                   </td>
                 </tr>

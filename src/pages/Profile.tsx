@@ -1,13 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Sliders, ChevronRight, RotateCcw, LogOut, Package, Loader2 } from 'lucide-react';
-import { motion } from 'motion/react';
 import { useAuth } from '../contexts/AuthContext';
 import { useCart } from '../contexts/CartContext';
 import { DemoOrder, DemoProfile, getDemoOrdersForUser, getDemoProducts, getDemoProfile } from '../lib/demoStore';
-
-const avatarImage = "https://lh3.googleusercontent.com/aida-public/AB6AXuC1jP0cW1YMNjiBTHcML_eyhiht1z7-2t-9oS4kMDogRMdIbGMu0-sQKSDu2qsIIwCy1AcWUgMZ9z4G0CwZGH86QeVKgS-c_wc9XSqzn-2WfMdJZyZCjBPaWYVGN7zEaGJ6IJ-r4yV13z2U_f20-WMLAElhUA1IZxXyMD917vjtRdiPLC4AULh8I8Pw5Pvxs75CnCR8IYKRsFXVe72r6-I5io43u-vPh5i5daFcxkJxMjaciQJIWCEEApeM3r40vQtG7_cY5eHkmU0";
-const riceImg = "https://lh3.googleusercontent.com/aida-public/AB6AXuDOKYVkSAThdFox_Rm6aKWzQfZdJamvPRq3Yp-YTKk2s944tiAqESoA4W3fcqfLFpnpvWevRWe2frVhwID9eYv0UE7xzbNn6PabpAWXNiWnFgFXBF6TFKIFHgmCeqK3q9Hs1q2JfJpNq3zt6Cy-gXjiK97iBFJYxTIjlETl8YXXbDOgIAT3gN6cOaK_9Iq6VjC-ZdddXc9iPEyJ-QGmHFXb2BBFMV38IZ05v0Sq53VZwVoduuHEaDQhoMKGctq6UpU-FcBxQEpuEFg";
 
 export default function Profile() {
   const { user, signOut } = useAuth();
@@ -64,17 +60,17 @@ export default function Profile() {
           <h1 className="font-display text-3xl font-bold text-on-surface lg:text-5xl">Hello, {firstName}</h1>
           <p className="text-sm text-on-surface-variant mt-1 lg:text-base">Welcome back to your nutrition hub.</p>
         </div>
-        <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-primary-container shadow-sm shrink-0 lg:w-20 lg:h-20">
-          <img src={avatarImage} alt="Profile picture" className="w-full h-full object-cover" />
+        <div className="flex h-16 w-16 shrink-0 items-center justify-center border border-rule bg-paper-2 font-display text-2xl font-bold lg:h-20 lg:w-20">
+          {firstName.slice(0, 1).toUpperCase()}
         </div>
       </section>
 
       {/* Bento Grid Dashboard */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <section className="flex flex-col border-t-2 border-rule-2">
         {/* Profile Overview Card */}
-        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="bg-surface-container-lowest rounded-[20px] p-4 lg:p-6 shadow-[0px_6px_20px_rgba(0,0,0,0.04)] flex flex-col gap-3 border border-surface-container-high/50">
+        <div className="grid gap-6 border-b border-rule bg-paper-2 p-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-center lg:p-7">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container shrink-0">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center text-ink">
               <User size={20} />
             </div>
             <div className="flex-1 overflow-hidden">
@@ -82,44 +78,46 @@ export default function Profile() {
               <p className="text-sm text-on-surface-variant truncate">{user.email}</p>
             </div>
           </div>
-          <div className="mt-2 border-t border-surface-variant pt-3 flex justify-between items-center">
+          <div className="flex items-center justify-between border-t border-rule pt-3 lg:border-l lg:border-t-0 lg:pl-7 lg:pt-0">
             <div>
-              <span className="text-xs tracking-wider font-bold text-on-surface-variant uppercase">Status</span>
-              <p className="text-base text-primary font-semibold">NutriPlus Member</p>
+              <span className="editorial-label">Status</span>
+              <p className="text-base text-ink font-semibold">Demo member</p>
             </div>
-            <button onClick={handleLogout} className="flex items-center gap-1.5 text-sm font-semibold text-error hover:text-error-container active:scale-95 transition-all">
+            <button onClick={handleLogout} className="flex items-center gap-1.5 text-sm font-semibold text-error hover:underline">
               <LogOut size={16} />
               Logout
             </button>
           </div>
-        </motion.div>
+        </div>
 
         {/* Preferences Card */}
-        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }} className="bg-surface-container-lowest rounded-[20px] p-4 lg:p-6 shadow-[0px_6px_20px_rgba(0,0,0,0.04)] flex flex-col gap-3 border border-surface-container-high/50">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-tertiary-container flex items-center justify-center text-on-tertiary-container shrink-0">
-              <Sliders size={20} />
+        <div className="grid gap-6 border-b border-rule bg-paper p-5 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-center lg:p-7">
+          <div>
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center text-accent">
+                <Sliders size={20} />
+              </div>
+              <h3 className="font-display text-lg font-semibold text-on-surface">Rice Recommendation</h3>
             </div>
-            <h3 className="font-display text-lg font-semibold text-on-surface">Rice Recommendation</h3>
+            {profile?.recommendation_level ? (
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <span className="border-y border-rule px-3 py-1 text-sm font-medium text-ink">Provisional Level {profile.recommendation_level}</span>
+                <button onClick={() => navigate('/match')} className="text-sm font-semibold text-primary hover:underline">View result</button>
+              </div>
+            ) : (
+              <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">Complete the five-question rice preference questionnaire to see a provisional match.</p>
+            )}
           </div>
-          {profile?.recommendation_level ? (
-            <div className="mt-1 flex flex-wrap items-center gap-2">
-              <span className="rounded-full bg-secondary-container/40 px-3 py-1 text-xs font-bold text-primary">Provisional Level {profile.recommendation_level}</span>
-              <button onClick={() => navigate('/match')} className="text-sm font-semibold text-primary hover:underline">View result</button>
-            </div>
-          ) : (
-            <p className="mt-1 text-sm leading-relaxed text-on-surface-variant">Complete the five-question rice preference questionnaire to see a provisional match.</p>
-          )}
-          <div className="mt-auto border-t border-surface-variant pt-3">
+          <div className="border-t border-rule pt-3 lg:border-l lg:border-t-0 lg:pl-7 lg:pt-0">
             <button onClick={() => navigate('/priority')} className="w-full flex justify-between items-center text-on-surface-variant hover:text-primary transition-colors">
               <span className="text-sm font-medium">{profile?.recommendation_level ? 'Change questionnaire answers' : 'Start questionnaire'}</span>
               <ChevronRight size={20} />
             </button>
           </div>
-        </motion.div>
+        </div>
 
         {/* Recent Orders List (Full Width) */}
-        <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }} className="col-span-1 md:col-span-2 bg-surface-container-lowest rounded-[20px] p-5 lg:p-7 shadow-[0px_6px_20px_rgba(0,0,0,0.04)] flex flex-col gap-4 border border-surface-container-high/50">
+        <div className="flex flex-col gap-4 border-b-2 border-rule-2 bg-paper p-5 lg:p-7">
           <div className="flex justify-between items-end">
             <h2 className="font-display text-xl font-bold text-on-surface">Recent Orders</h2>
             <span className="text-sm text-on-surface-variant font-medium">{orders.length} total</span>
@@ -132,35 +130,35 @@ export default function Profile() {
               </div>
             ) : orders.length > 0 ? (
               orders.map((order, index) => (
-                <div key={order.id} className="flex items-center justify-between p-3 rounded-xl border border-surface-variant hover:border-primary-container transition-colors">
+                <div key={order.id} className="flex items-center justify-between border-b border-rule p-3 last:border-b-0 hover:bg-paper-2">
                   <div className="flex min-w-0 items-center gap-4">
-                    <div className="w-16 h-16 rounded-lg overflow-hidden bg-surface-container shrink-0">
-                      <img src={riceImg} alt={order.product_name} className="w-full h-full object-cover" />
+                    <div className="flex h-16 w-16 shrink-0 items-center justify-center border border-rule bg-paper-2 text-muted">
+                      <Package size={24} strokeWidth={1.5} aria-hidden="true" />
                     </div>
                     <div className="min-w-0">
                       <h4 className="text-sm font-semibold text-on-surface truncate">{order.product_name}</h4>
                       <p className="text-xs text-on-surface-variant mt-1">
-                        {order.status === 'completed' ? 'Delivered' : 'Pending'} • {new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        {order.status === 'completed' ? 'Delivered' : 'Pending'}, {new Date(order.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                       </p>
                     </div>
                   </div>
-                  <button onClick={() => handleReorder(order)} className={`hidden sm:flex text-sm px-4 py-2 rounded-full font-semibold active:scale-95 transition-all flex items-center gap-1.5 shadow-sm ${index === 0 ? 'bg-primary text-white hover:bg-primary-container' : 'bg-surface text-primary border border-primary hover:bg-secondary-container'}`}>
+                  <button onClick={() => handleReorder(order)} className={`hidden items-center gap-1.5 border-y px-4 py-2 text-sm font-semibold sm:flex ${index === 0 ? 'border-ink bg-ink text-paper hover:bg-ink-2' : 'border-rule-2 bg-paper text-ink hover:bg-paper-2'}`}>
                     <RotateCcw size={16} />
                     <span>Reorder</span>
                   </button>
-                  <button onClick={() => handleReorder(order)} aria-label={`Reorder ${order.product_name}`} className="sm:hidden text-primary p-2 hover:bg-surface-container rounded-full transition-colors">
+                  <button onClick={() => handleReorder(order)} aria-label={`Reorder ${order.product_name}`} className="p-2 text-ink hover:bg-paper-2 sm:hidden">
                     <RotateCcw size={20} />
                   </button>
                 </div>
               ))
             ) : (
-              <div className="text-center p-8 border border-dashed border-surface-variant rounded-xl">
+              <div className="border-y border-dashed border-rule p-8 text-center">
                 <Package className="mx-auto text-surface-variant mb-2" size={32} />
                 <p className="text-sm text-on-surface-variant font-medium">No orders yet</p>
               </div>
             )}
           </div>
-        </motion.div>
+        </div>
       </section>
     </div>
   );

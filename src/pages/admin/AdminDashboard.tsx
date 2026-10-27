@@ -35,10 +35,10 @@ export default function AdminDashboard() {
     <div>
       <h2 className="text-3xl font-bold font-display text-on-surface mb-8 xl:text-4xl">Dashboard Overview</h2>
       
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 border-y-2 border-rule-2 lg:grid-cols-2 xl:grid-cols-3">
         {statCards.map((stat, i) => (
-          <div key={i} className="bg-white p-6 rounded-3xl border border-surface-container-high shadow-sm flex items-center gap-4">
-            <div className={`w-14 h-14 rounded-full flex items-center justify-center ${stat.bg}`}>
+          <div key={i} className="flex items-center gap-4 border-b border-rule bg-paper p-6 lg:border-r xl:border-b-0 last:border-r-0">
+            <div className={`flex h-14 w-14 items-center justify-center ${stat.bg}`}>
               {stat.icon}
             </div>
             <div>

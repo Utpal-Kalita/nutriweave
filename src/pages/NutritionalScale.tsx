@@ -1,95 +1,56 @@
 import React from 'react';
-import { FlaskConical, Info, Layers3 } from 'lucide-react';
-import { motion } from 'motion/react';
 import { RecommendationLevel, RECOMMENDATION_VARIANTS } from '../lib/recommendation';
 
-const variantPresentation: Record<RecommendationLevel, {
-  title: string;
-  description: string;
-  tone: string;
-}> = {
+const variantPresentation: Record<RecommendationLevel, { title: string; description: string }> = {
   1: {
     title: 'Less polished',
-    description: 'The workbook defines this as the least polished option. It is selected when the highest nutrition preference is stronger than the taste and texture preference.',
-    tone: 'bg-primary text-white',
+    description: 'Selected when the highest nutrition preference is stronger than the preference for soft, white-rice-like texture.',
   },
   2: {
     title: 'Middle balance',
-    description: 'The workbook defines this as the midpoint. It is selected when the highest nutrition preference and taste preference are equal.',
-    tone: 'bg-secondary-container text-on-secondary-container',
+    description: 'Selected when the highest nutrition preference and the taste and texture preference are equal.',
   },
   3: {
     title: 'More polished',
-    description: 'The workbook defines this as the most polished option. It is selected when the preference for a soft, white-rice-like texture is stronger.',
-    tone: 'bg-amber-100 text-amber-900',
+    description: 'Selected when the preference for soft, white-rice-like texture is stronger than the highest nutrition preference.',
   },
 };
 
-const variants = ([1, 2, 3] as const).map((level) => ({
-  level,
-  ...RECOMMENDATION_VARIANTS[level],
-  ...variantPresentation[level],
-}));
-
 export default function NutritionalScale() {
   return (
-    <div className="mx-auto flex min-h-full w-full max-w-6xl flex-col bg-background px-5 pb-16 pt-8 sm:px-8 lg:px-10 lg:pt-12">
-      <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="mx-auto mb-12 max-w-3xl text-center">
-        <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-primary">Workbook variant structure</p>
-        <h1 className="font-display text-4xl font-bold text-on-background lg:text-5xl">Three polishing levels</h1>
-        <p className="mt-4 text-lg leading-relaxed text-on-surface-variant">
-          The current recommender compares nutrition preferences with taste and texture, then selects one of these workbook-defined variants.
-        </p>
-      </motion.div>
+    <div className="container min-h-full py-10 lg:py-16">
+      <header className="grid gap-8 border-b-2 border-rule-2 pb-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-end lg:gap-16">
+        <h1 className="text-display-s">Three workbook polishing levels.</h1>
+        <p className="lead">The recommender compares customer preferences and returns one of these provisional variants.</p>
+      </header>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        {variants.map((variant, index) => (
-          <motion.article
-            key={variant.level}
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: index * 0.08 }}
-            className="overflow-hidden rounded-3xl border border-surface-container-high bg-white shadow-sm"
-          >
-            <div className={`p-6 ${variant.tone}`}>
-              <span className="text-xs font-bold uppercase tracking-widest opacity-70">Recommendation</span>
-              <div className="mt-2 flex items-end justify-between gap-4">
-                <h2 className="font-display text-3xl font-bold">Level {variant.level}</h2>
-                <span className="rounded-full bg-white/20 px-3 py-1 text-sm font-bold">{variant.polishingPercentage}% polish</span>
+      <div className="border-b-2 border-rule-2">
+        {([1, 2, 3] as const).map((level) => {
+          const variant = RECOMMENDATION_VARIANTS[level];
+          const presentation = variantPresentation[level];
+          return (
+            <article key={level} className="grid gap-6 border-b border-rule py-10 last:border-b-0 lg:grid-cols-[6rem_minmax(0,0.75fr)_minmax(0,1.25fr)_auto] lg:items-baseline lg:gap-8">
+              <span className="font-display text-6xl font-bold tabular-nums">{level}</span>
+              <div>
+                <h2 className="text-3xl">Level {level}: {presentation.title}</h2>
               </div>
-            </div>
-            <div className="p-6">
-              <div className="flex items-center gap-2 text-primary">
-                <Layers3 size={19} aria-hidden="true" />
-                <h3 className="font-display text-lg font-bold text-on-surface">{variant.title}</h3>
-              </div>
-              <p className="mt-3 text-sm leading-relaxed text-on-surface-variant">{variant.description}</p>
-            </div>
-          </motion.article>
-        ))}
+              <p className="lead text-ink-2">{presentation.description}</p>
+              <span className="font-outlier text-xl tabular-nums text-ink-2">{variant.polishingPercentage}% polish</span>
+            </article>
+          );
+        })}
       </div>
 
-      <div className="mt-10 grid gap-5 lg:grid-cols-2">
-        <div className="flex items-start gap-4 rounded-3xl border border-amber-200 bg-amber-50 p-6 text-amber-950">
-          <FlaskConical className="mt-0.5 shrink-0" size={24} aria-hidden="true" />
-          <div>
-            <h2 className="font-display text-lg font-bold">Nutritional measurements require validation</h2>
-            <p className="mt-2 text-sm leading-relaxed">
-              The workbook’s GI, protein, fibre, and mineral values are assumptions and interpolations, not laboratory-verified Nutriweave product results. They are intentionally not presented here as product facts.
-            </p>
-          </div>
+      <section className="grid gap-8 border-b border-rule bg-paper-2 py-10 lg:grid-cols-2 lg:gap-16">
+        <div>
+          <h2 className="text-3xl">Measurements still need validation.</h2>
+          <p className="mt-4 text-ink-2">The workbook’s GI, protein, fibre and mineral values are assumptions and interpolations, not laboratory-verified Nutriweave product results.</p>
         </div>
-
-        <div className="flex items-start gap-4 rounded-3xl border border-primary/15 bg-primary/5 p-6 text-on-surface">
-          <Info className="mt-0.5 shrink-0 text-primary" size={24} aria-hidden="true" />
-          <div>
-            <h2 className="font-display text-lg font-bold">The fifth-question rule is pending</h2>
-            <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">
-              Overall nutritional value is collected in the questionnaire but does not affect these levels until Arnatattva LLP confirms how it should enter the calculation.
-            </p>
-          </div>
+        <div>
+          <h2 className="text-3xl">The fifth rule is still pending.</h2>
+          <p className="mt-4 text-ink-2">Nutritional is collected but does not affect these levels until Arnatattva LLP confirms whether it belongs in the maximum or follows another rule.</p>
         </div>
-      </div>
+      </section>
     </div>
   );
 }

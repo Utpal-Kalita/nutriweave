@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Activity, ArrowRight, Dumbbell, Gem, HeartPulse, Info, Loader2, Utensils } from 'lucide-react';
-import { motion } from 'motion/react';
+import { Loader2 } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
 import { ensureDemoProfile, getDemoProducts, saveDemoProfile } from '../lib/demoStore';
 import {
@@ -15,19 +14,6 @@ import {
   RECOMMENDATION_ALGORITHM_VERSION,
   validateRecommendationAnswers,
 } from '../lib/recommendation';
-
-const questionVisuals = {
-  protein: { icon: Dumbbell, color: 'bg-tertiary-container', accent: 'text-tertiary', bg: 'bg-tertiary-container/10' },
-  minerals: { icon: Gem, color: 'bg-primary-container', accent: 'text-primary', bg: 'bg-primary-container/10' },
-  gi: { icon: Activity, color: 'bg-secondary', accent: 'text-secondary', bg: 'bg-secondary-container/20' },
-  taste: { icon: Utensils, color: 'bg-amber-600', accent: 'text-amber-700', bg: 'bg-amber-100/60' },
-  overallNutrition: { icon: HeartPulse, color: 'bg-slate-700', accent: 'text-slate-700', bg: 'bg-slate-100' },
-} satisfies Record<RecommendationQuestionId, {
-  icon: typeof Dumbbell;
-  color: string;
-  accent: string;
-  bg: string;
-}>;
 
 function asPreferenceScore(value: number | undefined): PreferenceScore | undefined {
   return value === 1 || value === 2 || value === 3 ? value : undefined;
@@ -50,7 +36,6 @@ export default function PrioritySelection() {
       return;
     }
 
-    // Preserve existing preferences while requiring the two newly introduced answers.
     setAnswers({
       protein: asPreferenceScore(profile.protein_priority),
       minerals: asPreferenceScore(profile.minerals_priority),
@@ -120,89 +105,76 @@ export default function PrioritySelection() {
   const answeredCount = Object.values(answers).filter((value) => value !== undefined).length;
 
   return (
-    <div className="flex min-h-full flex-col bg-surface">
-      <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col gap-8 px-5 pb-40 pt-6 sm:px-8 lg:gap-10 lg:px-10 lg:pb-8 lg:pt-12">
-        <div>
-          <div className="mb-3 flex items-center justify-between text-xs font-bold uppercase tracking-widest text-on-surface-variant">
-            <span>Your rice preferences</span>
-            <span>{answeredCount} of 5 answered</span>
+    <div className="flex min-h-full flex-col bg-paper-2 pb-28 text-ink lg:pb-0">
+      <main className="container flex-1 py-10 lg:py-16">
+        <header className="grid gap-8 rounded-card bg-sky p-7 shadow-card sm:p-10 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)] lg:items-end lg:gap-16">
+          <div>
+            <h1 className="text-display-s">What matters in your everyday rice?</h1>
+            <p className="lead mt-5">Choose one answer per question. Edit any response before submitting.</p>
           </div>
-          <div className="h-2 overflow-hidden rounded-full bg-surface-container-highest" aria-hidden="true">
-            <div className="h-full rounded-full bg-primary transition-[width]" style={{ width: `${answeredCount * 20}%` }} />
-          </div>
-        </div>
-
-        <div className="max-w-3xl">
-          <p className="mb-3 text-xs font-bold uppercase tracking-[0.2em] text-primary">Five quick questions</p>
-          <h1 className="font-display text-3xl font-bold leading-tight text-on-surface lg:text-5xl">What matters in your everyday rice?</h1>
-          <p className="mt-4 text-base leading-relaxed text-on-surface-variant lg:text-lg">
-            Choose one answer for every question. You can change any response before viewing your match.
-          </p>
-        </div>
-
-        <div className="grid gap-3 rounded-2xl border border-primary/10 bg-primary/5 p-4 sm:grid-cols-3">
-          {PREFERENCE_OPTIONS.map((option) => (
-            <div key={option.value} className="flex items-start gap-3">
-              <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary font-bold text-white">{option.value}</span>
-              <div>
-                <p className="text-sm font-bold text-on-surface">{option.label}</p>
-                <p className="text-xs text-on-surface-variant">{option.description}</p>
-              </div>
+          <div>
+            <div className="flex items-baseline justify-between gap-6">
+              <span className="font-display text-xl font-bold">Questionnaire progress</span>
+              <span className="font-outlier text-sm tabular-nums text-muted">{answeredCount} of 5</span>
             </div>
-          ))}
-        </div>
+            <div className="mt-4 grid grid-cols-5 gap-1" aria-label={`${answeredCount} of 5 questions answered`}>
+              {RECOMMENDATION_QUESTIONS.map((question, index) => (
+                <span key={question.id} className={`h-3 rounded-pill ${index < answeredCount ? 'bg-leaf' : 'bg-paper/70'}`} aria-hidden="true" />
+              ))}
+            </div>
+          </div>
+        </header>
 
-        <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-4 text-amber-950">
-          <Info className="mt-0.5 shrink-0" size={20} aria-hidden="true" />
-          <p className="text-sm leading-relaxed">
-            <strong>Provisional method:</strong> your overall nutritional value answer is collected and saved, but the verified workbook rule currently uses only protein, minerals, blood sugar response, and taste. It does not yet affect this match.
-          </p>
+        <section className="mt-6 grid gap-8 rounded-card bg-paper p-6 lg:grid-cols-[minmax(0,0.65fr)_minmax(0,1.35fr)] lg:gap-16 lg:p-8">
+          <h2 className="text-2xl">The three-point scale</h2>
+          <dl className="grid gap-4 sm:grid-cols-3">
+            {PREFERENCE_OPTIONS.map((option) => (
+              <div key={option.value} className={`rounded-2xl p-4 ${option.value === 1 ? 'bg-paper-2' : option.value === 2 ? 'bg-harvest/45' : 'bg-leaf text-paper'}`}>
+                <dt className="font-display text-lg font-bold">{option.value}. {option.label}</dt>
+                <dd className={`mt-1 text-sm ${option.value === 3 ? 'text-paper-2' : 'text-ink-2'}`}>{option.description}</dd>
+              </div>
+            ))}
+          </dl>
+        </section>
+
+        <div className="my-6 rounded-2xl border border-accent/20 bg-paper px-5 py-4 text-sm leading-relaxed text-ink-2">
+          <strong className="text-ink">Current limitation:</strong> Nutritional is saved separately. Including it in the maximum has been tested as a candidate, but the verified workbook rule still uses Protein, Minerals, GI and Taste.
         </div>
 
         {Object.values(errors).some(Boolean) && (
-          <div className="rounded-2xl border border-error/20 bg-error-container p-4 text-sm font-semibold text-on-error-container" role="alert">
+          <div className="border-b border-error bg-error-container py-4 text-sm font-medium text-on-error-container" role="alert">
             Answer all five questions before viewing your provisional match.
           </div>
         )}
 
         {submissionError && (
-          <div className="rounded-2xl border border-error/20 bg-error-container p-4 text-sm font-semibold text-on-error-container" role="alert">
+          <div className="border-b border-error bg-error-container py-4 text-sm font-medium text-on-error-container" role="alert">
             {submissionError}
           </div>
         )}
 
-        <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
+        <div className="grid gap-5">
           {RECOMMENDATION_QUESTIONS.map((question, index) => {
-            const visual = questionVisuals[question.id];
-            const Icon = visual.icon;
             const currentValue = answers[question.id];
-
             return (
-              <motion.fieldset
+              <fieldset
                 key={question.id}
                 id={`question-${question.id}`}
                 tabIndex={-1}
                 aria-labelledby={`question-title-${question.id}`}
-                initial={{ y: 18, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: index * 0.05 }}
-                className={`relative overflow-hidden rounded-3xl border bg-surface-container-lowest p-5 shadow-sm outline-none lg:p-6 ${
-                  errors[question.id] ? 'border-error ring-1 ring-error/20' : 'border-surface-container-high'
-                } ${question.id === 'overallNutrition' ? 'lg:col-span-2' : ''}`}
+                className={`grid min-w-0 gap-6 rounded-card p-6 shadow-card outline-none sm:p-8 lg:grid-cols-[3rem_minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center lg:gap-8 ${
+                  errors[question.id] ? 'bg-error-container' : index % 3 === 1 ? 'bg-sky/55' : index % 3 === 2 ? 'bg-harvest/35' : 'bg-paper'
+                }`}
               >
-                <div className={`pointer-events-none absolute right-0 top-0 h-32 w-32 rounded-bl-[100px] ${visual.bg}`} />
-                <div className="relative z-10 flex items-start gap-4">
-                  <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full text-white shadow-sm ${visual.color}`}>
-                    <Icon size={21} aria-hidden="true" />
-                  </div>
-                  <div className="min-w-0 pr-8">
-                    <span className={`text-xs font-bold uppercase tracking-widest ${visual.accent}`}>{question.label}</span>
-                    <h2 id={`question-title-${question.id}`} className="mt-1 font-display text-xl font-bold leading-snug text-on-surface">{question.question}</h2>
-                    <p className="mt-2 text-sm leading-relaxed text-on-surface-variant">{question.supportingText}</p>
-                  </div>
+                <span className="flex h-10 w-10 items-center justify-center rounded-full bg-ink font-outlier text-sm tabular-nums text-paper">{index + 1}</span>
+                <div className="min-w-0">
+                  <span className="editorial-label">{question.label}</span>
+                  <h2 id={`question-title-${question.id}`} className="mt-1 text-title">{question.question}</h2>
+                  <p className="mt-2 text-sm leading-relaxed text-ink-2">{question.supportingText}</p>
+                  {errors[question.id] && <p className="mt-2 text-sm font-medium text-error">{errors[question.id]}</p>}
                 </div>
 
-                <div className="relative z-10 mt-6 grid gap-2 sm:grid-cols-3">
+                <div className="grid gap-2 sm:grid-cols-3">
                   {PREFERENCE_OPTIONS.map((option) => {
                     const selected = currentValue === option.value;
                     return (
@@ -211,44 +183,35 @@ export default function PrioritySelection() {
                         type="button"
                         onClick={() => updateAnswer(question.id, option.value)}
                         aria-pressed={selected}
-                        className={`rounded-2xl border px-3 py-3 text-left transition-all ${
-                          selected
-                            ? 'border-primary bg-primary text-white shadow-md shadow-primary/15'
-                            : 'border-surface-container-high bg-surface-container-low text-on-surface hover:border-primary/40 hover:bg-white'
+                        className={`min-h-16 rounded-pill px-4 py-3 text-left ${
+                          selected ? 'bg-ink text-paper' : 'bg-paper/80 text-ink hover:bg-paper'
                         }`}
                       >
-                        <span className="block text-sm font-bold">{option.label}</span>
-                        <span className={`mt-0.5 block text-xs ${selected ? 'text-white/75' : 'text-on-surface-variant'}`}>{option.description}</span>
+                        <span className="block font-display font-bold">{option.label}</span>
+                        <span className={`mt-1 block text-sm ${selected ? 'text-paper-2' : 'text-muted'}`}>{option.description}</span>
                       </button>
                     );
                   })}
                 </div>
-
-                {errors[question.id] && (
-                  <p className="relative z-10 mt-3 text-sm font-semibold text-error">{errors[question.id]}</p>
-                )}
-              </motion.fieldset>
+              </fieldset>
             );
           })}
         </div>
       </main>
 
-      <div className="fixed inset-x-0 bottom-0 z-50 mx-auto max-w-md border-t border-surface-container bg-white/90 p-6 backdrop-blur-xl lg:static lg:w-full lg:max-w-7xl lg:border-0 lg:bg-transparent lg:px-10 lg:pb-12 lg:pt-0 lg:backdrop-blur-none">
-        <div className="flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center">
-          <p className="hidden text-sm text-on-surface-variant lg:block">Your result will use the current four-input workbook rule.</p>
+      <div className="fixed inset-x-0 bottom-0 z-[200] bg-ink text-paper lg:static">
+        <div className="container flex min-h-20 items-center justify-between gap-6 py-3">
+          <p className="hidden text-sm text-paper-2 lg:block">The result uses the current workbook rule; the Nutritional extension is inactive.</p>
           <button
             type="button"
             onClick={handleSaveAndMatch}
             disabled={submitting}
-            className="flex h-14 w-full items-center justify-center gap-2 rounded-full bg-primary font-display font-semibold text-on-primary shadow-[0px_8px_20px_rgba(19,85,41,0.25)] transition-all active:scale-95 disabled:opacity-70 lg:ml-auto lg:w-auto lg:min-w-72 lg:px-8"
+            aria-busy={submitting}
+            className="editorial-action ml-auto w-full border-harvest bg-harvest text-ink hover:bg-paper lg:w-auto"
             id="see-recommended-button"
           >
-            {submitting ? <Loader2 className="animate-spin" size={24} /> : (
-              <>
-                View Provisional Match
-                <ArrowRight size={20} />
-              </>
-            )}
+            {submitting ? <Loader2 className="keep-motion animate-spin" size={20} aria-hidden="true" /> : null}
+            {submitting ? 'Saving answers' : 'View provisional match'}
           </button>
         </div>
       </div>

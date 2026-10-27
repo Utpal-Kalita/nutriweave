@@ -2,13 +2,13 @@
 
 ## Status
 
-The current recommendation is **provisional**. The application collects five customer answers, but the supplied workbook defines a rule for only four of them.
+The professor has confirmed that the questionnaire contains five separate parameters: Protein, Minerals, GI, Taste, and Nutritional. The supplied workbook still defines the calculation using only Protein, Minerals, GI, and Taste, so the active recommendation remains **provisional**.
 
 The unresolved business question is:
 
-> How should the Overall Nutritional Value answer influence the calculation of nutrition priority and the final recommendation?
+> Should Nutritional be included in `nutritionalPriority = max(protein, minerals, gi, nutritional)`, or influence nutritional priority in another approved way?
 
-Until Arnatattva LLP confirms this rule, Overall Nutritional Value is stored with the profile but does not affect the recommendation. Generating all 243 five-answer combinations would not define the missing business rule.
+Until Arnatattva LLP confirms this rule, Nutritional is stored with the profile but does not affect the active recommendation. The include-in-maximum interpretation is implemented and tested only as an explicit candidate strategy.
 
 ## Source Workbook
 
@@ -34,7 +34,7 @@ The five answers are:
 2. Minerals
 3. Blood sugar response / GI preference
 4. Taste and texture
-5. Overall nutritional value
+5. Nutritional
 
 All answers use:
 
@@ -58,6 +58,46 @@ else:
 ```
 
 The rule is implemented as a pure function in `src/lib/recommendation.ts`. It does not call Gemini or any other LLM.
+
+## Candidate Five-Parameter Extension
+
+The investigated candidate is:
+
+```text
+nutritionPriority = max(protein, minerals, gi, nutritional)
+
+if nutritionPriority > taste:
+    level = 1
+else if nutritionPriority < taste:
+    level = 3
+else:
+    level = 2
+```
+
+This candidate is available only through the explicit strategy identifier:
+
+```ts
+CANDIDATE_INCLUDE_NUTRITIONAL_STRATEGY
+```
+
+The application default remains:
+
+```ts
+WORKBOOK_PRIORITY_STRATEGY
+```
+
+No UI or persisted recommendation silently activates the candidate strategy.
+
+## All 243 Combinations
+
+`npm run generate:recommendations` generates `docs/recommendation-combinations-243.csv` with every `3^5 = 243` answer combination and both strategy results.
+
+| Strategy | Level 1 | Level 2 | Level 3 | Total |
+|---|---:|---:|---:|---:|
+| Active workbook rule (Nutritional collected only) | 135 | 81 | 27 | 243 |
+| Candidate maximum including Nutritional | 145 | 81 | 17 | 243 |
+
+The candidate changes 19 of the 243 recommendations. This difference is why it must not be activated without explicit business approval.
 
 ## Workbook Variants
 
@@ -83,13 +123,19 @@ interface DemoProduct {
 
 `mapRecommendationToProduct` only matches `recommendation_level`. It does not infer a mapping from the existing legacy `level`, product order, name, or ID.
 
-### Current Catalog Gap
+### Demo Catalog Mapping
 
-The active browser catalog contains three legacy products at levels 2, 5, and 8. None explicitly identifies itself as the workbook's 25%, 50%, or 75% polishing variant. The dormant Supabase seed also contains a separate 1–10 catalog and is not used by the running application.
+The active browser catalog contains three existing demo products. They are explicitly mapped without creating duplicates:
 
-Therefore, the application currently displays a safe product-unavailable fallback after calculating the variant. It does not create duplicate products or substitute an unrelated product.
+| Existing product | Recommendation level | Workbook polishing variant |
+|---|---:|---:|
+| `demo-product-1` | Level 1 | 25% |
+| `demo-product-2` | Level 2 | 50% |
+| `demo-product-3` | Level 3 | 75% |
 
-To enable ordering, an existing verified product record must be updated with the appropriate `recommendation_level` and `polishing_percentage`. Product IDs remain catalog-owned and are not hardcoded in the questionnaire or result UI.
+Previously seeded browser catalogs are migrated by product ID to add this mapping metadata. The mapping lives in the data layer, not the questionnaire or result UI.
+
+These remain demo products. Their names, prices, and variant assignments must be replaced or confirmed against Arnatattva LLP's production catalog before launch. Nutritional measurements remain unverified.
 
 ## Nutritional Data Caveat
 
@@ -132,16 +178,19 @@ Coverage includes:
 - Nutrition priority lower than taste.
 - Missing fifth answer validation.
 - Out-of-range answer validation.
-- Confirmation that Overall Nutritional Value does not yet change the result.
+- Confirmation that Nutritional does not change the active result.
+- Explicit candidate tests where including Nutritional changes the result.
 - The workbook's 45 / 27 / 9 result distribution across all 81 four-input combinations.
+- Both strategy distributions across all 243 five-input combinations.
 - Explicit product mapping and unavailable-product fallback.
+- One unique mapped demo product for every workbook level.
 
 ## Updating The Fifth Rule
 
 Once the business rule is confirmed:
 
-1. Add the fifth answer to the calculation in `calculateRiceRecommendation`.
-2. Change the algorithm version.
-3. Add tests for approved example personas and all relevant boundaries.
+1. Confirm whether `CANDIDATE_INCLUDE_NUTRITIONAL_STRATEGY` is correct or provide a different rule.
+2. Change the active algorithm version only after approval.
+3. Add approved example personas and acceptance outcomes.
 4. Update the provisional messaging in the questionnaire and result pages.
 5. Decide whether existing saved recommendations should be recalculated or retained under their recorded version.
