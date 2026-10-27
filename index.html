@@ -3,11 +3,29 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Answer five rice preference questions and receive a provisional Nutriweave polishing-level match." />
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23135529'/%3E%3Cpath d='M18 42c14-1 24-10 28-24 3 18-6 30-24 34-2-5-3-8-4-10Z' fill='%23fff7dd'/%3E%3C/svg%3E" />
     <title>Nutrifibe</title>
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      window.hallmarkSlots = (mapping) => {
+        for (const [key, value] of Object.entries(mapping)) {
+          const slot = document.querySelector(`[data-slot="${key}"]`);
+          if (!slot) continue;
+          const image = new Image();
+          image.src = typeof value === 'string' ? value : value.src;
+          image.alt = (typeof value === 'object' && value.alt) || slot.dataset.alt || '';
+          slot.querySelectorAll(':scope > img').forEach((oldImage) => oldImage.remove());
+          slot.prepend(image);
+        }
+      };
+      document.querySelectorAll('[data-slot] img').forEach((image) => {
+        if (image.complete && !image.naturalWidth) image.remove();
+        else image.addEventListener('error', () => image.remove(), { once: true });
+      });
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

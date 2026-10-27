@@ -1,114 +1,37 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sliders, Scale, Sprout, Truck } from 'lucide-react';
-import { motion } from 'motion/react';
+
+const steps = [
+  ['Answer five questions', 'Rate Protein, Minerals, GI, Taste and Nutritional on the same three-point scale.'],
+  ['Compare nutrition with taste', 'The verified workbook rule compares the highest of the first three nutrition answers with taste and texture.'],
+  ['Receive a polishing level', 'The comparison returns Level 1 at 25%, Level 2 at 50%, or Level 3 at 75% polishing.'],
+  ['Order only when mapped', 'A product appears only when the catalog explicitly maps it to the recommended workbook level.'],
+] as const;
 
 export default function HowItWorks() {
   const navigate = useNavigate();
 
-  const steps = [
-    { 
-      id: 1, 
-      label: 'Step 1', 
-      title: 'You tell us your priorities.', 
-      icon: Sliders,
-      active: false
-    },
-    { 
-      id: 2, 
-      label: 'Step 2', 
-      title: 'Our algorithm finds your balance.', 
-      icon: Scale,
-      active: false
-    },
-    { 
-      id: 3, 
-      label: 'Step 3', 
-      title: 'We mill your rice.', 
-      icon: Sprout,
-      active: false
-    },
-    { 
-      id: 4, 
-      label: 'Step 4', 
-      title: 'Delivered fresh to you.', 
-      icon: Truck,
-      active: true
-    },
-  ];
-
   return (
-    <div className="flex flex-col min-h-full bg-background w-full max-w-7xl mx-auto">
-      {/* Hero Section */}
-      <section className="px-container sm:px-8 lg:px-10 pt-8 lg:pt-12 pb-6 lg:pb-12">
-        <motion.h1 
-          initial={{ x: -20, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          className="text-4xl font-bold text-on-background mb-4 leading-tight font-display lg:text-5xl"
-        >
-          How it works
-        </motion.h1>
-        <motion.p 
-          initial={{ x: -20, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ delay: 0.1 }}
-          className="text-lg text-on-surface-variant font-sans lg:text-xl"
-        >
-          Your personalized nutrition journey from seed to spoon.
-        </motion.p>
-      </section>
+    <div className="container min-h-full py-10 lg:py-16">
+      <header className="grid gap-8 border-b-2 border-rule-2 pb-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-end lg:gap-16">
+        <h1 className="text-display-s">How the workbook becomes a match.</h1>
+        <p className="lead">The rule is deterministic. No language model chooses products.</p>
+      </header>
 
-      {/* Vertical Timeline Steps */}
-      <section className="px-container sm:px-8 lg:px-10 py-4 relative flex-1">
-        {/* Connecting Line */}
-        <div className="absolute left-[44px] top-[40px] bottom-[60px] w-[2px] bg-surface-container-highest z-0 lg:left-24 lg:right-24 lg:top-[47px] lg:bottom-auto lg:h-[2px] lg:w-auto"></div>
-        
-        <div className="flex flex-col gap-8 relative z-10 lg:grid lg:grid-cols-4 lg:gap-6">
-          {steps.map((step, index) => (
-            <motion.div 
-              key={step.id}
-              initial={{ y: 20, opacity: 0 }}
-              animate={{ y: 0, opacity: 1 }}
-              transition={{ delay: 0.1 * index + 0.2 }}
-              className="flex flex-row items-center gap-4 group lg:flex-col lg:items-stretch"
-            >
-              <div className={`w-12 h-12 shrink-0 rounded-full flex items-center justify-center shadow-md z-10 relative transition-transform duration-300 group-hover:scale-105 border lg:mx-auto ${
-                step.active 
-                  ? 'bg-primary-container text-on-primary-container border-primary-container shadow-primary/20' 
-                  : 'bg-surface-container-lowest border-surface-container-highest text-primary'
-              }`}>
-                <step.icon size={22} strokeWidth={2.5} fill={step.active ? "currentColor" : "none"} />
-              </div>
-              
-              <div className={`p-5 rounded-2xl shadow-sm flex-1 border transition-all lg:min-h-40 ${
-                step.active 
-                  ? 'bg-primary-container text-on-primary-container border-primary-container' 
-                  : 'bg-surface-container-lowest border-surface-variant/30'
-              }`}>
-                <span className={`text-[10px] font-bold uppercase block mb-1 tracking-widest ${
-                  step.active ? 'text-secondary-fixed' : 'text-outline'
-                }`}>
-                  {step.label}
-                </span>
-                <p className={`text-lg font-semibold font-display ${
-                  step.active ? 'text-white' : 'text-on-background'
-                }`}>
-                  {step.title}
-                </p>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </section>
+      <ol className="border-b-2 border-rule-2">
+        {steps.map(([title, description], index) => (
+          <li key={title} className="grid gap-5 border-b border-rule py-8 last:border-b-0 lg:grid-cols-[4rem_minmax(0,0.75fr)_minmax(0,1.25fr)] lg:items-baseline lg:gap-8">
+            <span className="font-outlier text-2xl tabular-nums text-muted">{index + 1}</span>
+            <h2 className="text-3xl">{title}</h2>
+            <p className="lead text-ink-2">{description}</p>
+          </li>
+        ))}
+      </ol>
 
-      {/* Fixed Bottom CTA Panel */}
-      <div className="sticky bottom-0 left-0 w-full px-container sm:px-8 py-6 bg-surface-container-lowest border-t border-surface-container-highest/30 shadow-[0px_-10px_30px_rgba(0,0,0,0.03)] z-50 lg:static lg:bg-transparent lg:border-0 lg:shadow-none lg:px-10 lg:py-12">
-        <button 
-          onClick={() => navigate('/priority')}
-          className="w-full bg-primary text-on-primary font-display font-semibold h-14 rounded-full flex items-center justify-center active:scale-[0.98] transition-transform duration-200 shadow-sm lg:w-auto lg:min-w-56 lg:px-8 lg:mx-auto"
-          id="continue-button-how"
-        >
-          Continue
+      <div className="flex flex-col gap-5 py-10 sm:flex-row sm:items-center sm:justify-between">
+        <p className="max-w-[65ch] text-ink-2">Nutritional is collected separately. Including it in the maximum is a tested candidate, not the active rule.</p>
+        <button type="button" onClick={() => navigate('/priority')} className="editorial-action" id="continue-button-how">
+          Answer the questions
         </button>
       </div>
     </div>

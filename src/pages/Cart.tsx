@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { useCart } from '../contexts/CartContext';
 import { useAuth } from '../contexts/AuthContext';
-import { ShoppingBag, MapPin, CreditCard, CheckCircle2, ChevronRight, ArrowRight, Loader2, ShieldCheck, Smartphone, Landmark, Receipt, Wifi } from 'lucide-react';
+import { ShoppingBag, MapPin, CreditCard, CheckCircle2, Loader2, ShieldCheck, Smartphone, Landmark, Receipt, Wifi } from 'lucide-react';
 import { addDemoOrder } from '../lib/demoStore';
+import { calculateOrderPricing } from '../lib/pricing';
 import gsap from 'gsap';
 
 type PaymentStatus = 'idle' | 'processing' | 'success';
@@ -21,8 +22,14 @@ export default function Cart() {
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('upi');
   const [paymentStep, setPaymentStep] = useState(0);
   const [addressError, setAddressError] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const gatewayRef = useRef<HTMLDivElement>(null);
+  const addressRef = useRef<HTMLTextAreaElement>(null);
   const transactionId = useMemo(() => `NFB-${Math.random().toString(36).slice(2, 8).toUpperCase()}`, []);
+  const pricing = useMemo(
+    () => cart ? calculateOrderPricing(cart.price, cart.quantity, cart.frequency) : null,
+    [cart],
+  );
 
   const paymentMethods = [
     { id: 'upi' as const, label: 'UPI', detail: 'Mock UPI Collect', icon: Smartphone },
@@ -47,14 +54,15 @@ export default function Cart() {
   }, [paymentStatus, paymentStep]);
 
   const handlePlaceOrder = async () => {
-    if (!cart || !user) return;
+    if (!cart || !user || !pricing) return;
     
-    if (address.trim().length < 3) {
+    if (address.trim().length < 10) {
       setAddressError(true);
-      alert("Please enter a valid delivery address before proceeding.");
+      addressRef.current?.focus();
       return;
     }
     setAddressError(false);
+    setCheckoutError(null);
 
     setLoading(true);
     setPaymentStatus('processing');
@@ -73,7 +81,7 @@ export default function Cart() {
         user_id: user.id,
         product_id: cart.id,
         product_name: cart.name,
-        total_price: cart.price * cart.quantity,
+        total_price: pricing.total,
         quantity: cart.quantity,
         size: cart.size,
         frequency: cart.frequency,
@@ -85,7 +93,7 @@ export default function Cart() {
       clearCart();
     } catch (err) {
       console.error('Error placing order:', err);
-      alert('Failed to place order. Please try again.');
+      setCheckoutError('We could not complete the demo order. Please try again.');
       setPaymentStatus('idle');
     } finally {
       setLoading(false);
@@ -95,24 +103,18 @@ export default function Cart() {
   if (showSuccess) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-surface min-h-[calc(100vh-5rem)]">
-        <motion.div 
-          initial={{ scale: 0.5, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: 'spring', stiffness: 260, damping: 18 }}
-          className="relative w-28 h-28 bg-primary rounded-full flex items-center justify-center mb-6 text-white shadow-xl shadow-primary/30"
-        >
-          <span className="absolute inset-0 rounded-full border-8 border-primary/20 animate-ping"></span>
+        <div className="relative mb-6 flex h-28 w-28 items-center justify-center border-y-2 border-rule-2 bg-ink text-paper">
           <CheckCircle2 size={48} />
-        </motion.div>
+        </div>
         <h2 className="text-3xl font-bold text-on-surface mb-3 font-display">Order Successful!</h2>
         <p className="text-on-surface-variant mb-4 leading-relaxed">Your personalized Nutrifibe grains are being prepared for dispatch.</p>
-        <div className="bg-white border border-surface-container-high rounded-2xl px-4 py-3 mb-10 w-full max-w-xs text-left shadow-sm">
-          <p className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold">Mock Payment ID</p>
+        <div className="mb-10 w-full max-w-xs border-y border-rule-2 bg-paper-2 px-4 py-3 text-left">
+          <p className="editorial-label">Mock payment ID</p>
           <p className="font-display font-bold text-on-surface">{transactionId}</p>
         </div>
         <button 
           onClick={() => navigate('/profile')}
-          className="bg-primary text-white px-12 py-4 rounded-full font-bold shadow-lg shadow-primary/20 active:scale-95 transition-all"
+          className="editorial-action px-12"
         >
           View My Orders
         </button>
@@ -120,17 +122,17 @@ export default function Cart() {
     );
   }
 
-  if (!cart) {
+  if (!cart || !pricing) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center p-8 text-center bg-surface min-h-[calc(100vh-5rem)]">
-        <div className="w-24 h-24 bg-surface-container rounded-full flex items-center justify-center mb-6 text-outline">
+        <div className="mb-6 flex h-24 w-24 items-center justify-center border-y border-rule-2 bg-paper-2 text-muted">
           <ShoppingBag size={48} />
         </div>
         <h2 className="text-2xl font-bold text-on-surface mb-2 font-display">Your cart is empty</h2>
         <p className="text-on-surface-variant mb-8">Start your nutrition journey to see recommendations.</p>
         <button 
           onClick={() => navigate('/priority')}
-          className="bg-primary text-white px-8 py-3 rounded-full font-bold shadow-lg shadow-primary/20"
+          className="editorial-action"
         >
           Get Started
         </button>
@@ -139,88 +141,105 @@ export default function Cart() {
   }
 
   return (
-    <div className="flex flex-col min-h-full bg-surface-container-low">
+    <div className="flex min-h-full flex-col bg-paper">
       <main className="flex-1 w-full max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 pt-8 lg:pt-12 pb-32 lg:pb-16 lg:grid lg:grid-cols-[minmax(0,1.15fr)_minmax(360px,0.85fr)] lg:items-start lg:gap-x-10">
-        <div data-reveal className="mb-6 lg:col-span-2 lg:mb-8">
-          <p className="text-xs font-bold uppercase tracking-widest text-primary mb-2">Secure mock checkout</p>
-          <h1 className="text-3xl font-bold text-on-surface font-display lg:text-5xl">Checkout</h1>
+        <div data-reveal className="mb-8 border-b-2 border-rule-2 pb-8 lg:col-span-2">
+          <h1 className="text-display-s">Checkout</h1>
+          <p className="mt-3 text-ink-2">A secure mock checkout. No real payment is processed.</p>
         </div>
         
         {/* Order Summary */}
-        <section data-reveal className="bg-surface-container-lowest rounded-3xl p-6 lg:p-7 shadow-sm border border-surface-container-high mb-6 lg:col-start-2 lg:row-start-2 lg:row-span-3 lg:sticky lg:top-28 lg:mb-0">
+        <section data-reveal className="mb-6 border-y-2 border-rule-2 bg-paper-2 p-6 lg:col-start-2 lg:row-start-2 lg:row-span-3 lg:sticky lg:top-28 lg:mb-0 lg:p-7">
           <h2 className="text-lg font-bold text-on-surface mb-4 font-display flex items-center gap-2">
             <ShoppingBag size={20} className="text-primary" />
             Order Summary
           </h2>
           <div className="flex gap-4 mb-4">
-            <div className="w-20 h-20 bg-surface-container rounded-xl overflow-hidden shadow-inner shrink-0">
-               <img src="https://lh3.googleusercontent.com/aida-public/AB6AXuDOKYVkSAThdFox_Rm6aKWzQfZdJamvPRq3Yp-YTKk2s944tiAqESoA4W3fcqfLFpnpvWevRWe2frVhwID9eYv0UE7xzbNn6PabpAWXNiWnFgFXBF6TFKIFHgmCeqK3q9Hs1q2JfJpNq3zt6Cy-gXjiK97iBFJYxTIjlETl8YXXbDOgIAT3gN6cOaK_9Iq6VjC-ZdddXc9iPEyJ-QGmHFXb2BBFMV38IZ05v0Sq53VZwVoduuHEaDQhoMKGctq6UpU-FcBxQEpuEFg" alt="Rice" className="w-full h-full object-cover" />
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center border border-rule bg-paper-3 text-muted">
+              <ShoppingBag size={28} strokeWidth={1.5} aria-hidden="true" />
             </div>
             <div className="flex-1">
               <h3 className="font-bold text-on-surface">{cart.name}</h3>
               <p className="text-xs text-on-surface-variant mt-0.5">Size: {cart.size} • Qty: {cart.quantity}</p>
               <div className="flex justify-between items-end mt-2">
-                <span className="text-primary font-bold">₹{cart.price * cart.quantity}</span>
+                 <span className="text-primary font-bold">₹{pricing.subtotal}</span>
               </div>
             </div>
           </div>
           <div className="pt-4 border-t border-surface-container-high flex flex-col gap-2">
             <div className="flex justify-between text-sm">
               <span className="text-on-surface-variant">Subtotal</span>
-              <span className="text-on-surface font-semibold">₹{cart.price * cart.quantity}</span>
+              <span className="text-on-surface font-semibold">₹{pricing.subtotal}</span>
+            </div>
+            {pricing.subscriptionDiscount > 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-on-surface-variant">Subscription saving</span>
+                <span className="text-secondary font-semibold">-₹{pricing.subscriptionDiscount}</span>
+              </div>
+            )}
+            <div className="flex justify-between text-sm">
+              <span className="text-on-surface-variant">NUTRIFLAT30</span>
+              <span className="text-secondary font-semibold">-₹{pricing.promoDiscount}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-on-surface-variant">Delivery</span>
-              <span className="text-secondary font-bold">FREE</span>
+              <span className="text-on-surface-variant">Demo delivery</span>
+              <span className="text-secondary font-bold">₹0</span>
             </div>
             <div className="flex justify-between text-lg pt-2 mt-2 border-t border-dashed border-surface-container-high">
               <span className="font-bold text-on-surface font-display">Total</span>
-              <span className="font-bold text-primary">₹{cart.price * cart.quantity}</span>
+              <span className="font-bold text-primary">₹{pricing.total}</span>
             </div>
           </div>
           <button
             onClick={handlePlaceOrder}
             disabled={loading || paymentStatus !== 'idle'}
-            className="hidden lg:flex w-full mt-6 bg-primary text-white font-display font-bold h-14 rounded-full shadow-lg shadow-primary/30 items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-70 disabled:active:scale-100"
+            className="editorial-action mt-6 hidden w-full lg:flex"
           >
-            Proceed to Pay
-            <ArrowRight size={20} />
+            Pay ₹{pricing.total}
           </button>
         </section>
 
         {/* Shipping Address */}
-        <div data-reveal className={`w-full bg-surface-container-lowest rounded-2xl p-5 shadow-sm border mb-4 transition-all lg:col-start-1 lg:row-start-2 ${addressError ? 'border-error ring-1 ring-error' : 'border-surface-container-high focus-within:border-primary focus-within:ring-1 focus-within:ring-primary'}`}>
+        <div data-reveal className={`mb-4 w-full border-y bg-paper p-5 lg:col-start-1 lg:row-start-2 ${addressError ? 'border-error' : 'border-rule-2 focus-within:border-ink'}`}>
           <div className="flex items-center gap-4 text-left mb-3">
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${addressError ? 'bg-error/10 text-error' : 'bg-primary/10 text-primary'}`}>
+            <div className={`flex h-10 w-10 shrink-0 items-center justify-center ${addressError ? 'text-error' : 'text-ink'}`}>
               <MapPin size={20} />
             </div>
             <div className="flex-1">
-              <h3 className={`font-bold text-sm ${addressError ? 'text-error' : 'text-on-surface'}`}>Delivery Address</h3>
-              {addressError && <p className="text-xs text-error mt-0.5">Please provide a complete address.</p>}
+              <label htmlFor="delivery-address" className={`font-bold text-sm ${addressError ? 'text-error' : 'text-on-surface'}`}>Delivery Address</label>
+              <p className="text-xs text-on-surface-variant mt-0.5">Include your house number, street, and locality.</p>
             </div>
           </div>
           <textarea
+            ref={addressRef}
+            id="delivery-address"
+            aria-invalid={addressError}
+            aria-describedby={addressError ? 'delivery-address-error' : undefined}
             placeholder="Enter your complete delivery address..."
             value={address}
             onChange={(e) => {
               setAddress(e.target.value);
               if (e.target.value.trim().length >= 10) setAddressError(false);
             }}
-            className="w-full bg-surface-container-low text-on-surface placeholder:text-on-surface-variant/50 text-sm p-3 rounded-xl border-none outline-none resize-none min-h-[80px]"
+            className="min-h-24 w-full resize-y border border-muted bg-paper-2 p-3 text-base text-ink outline-2 outline-offset-[-3px] outline-transparent placeholder:text-muted focus-visible:outline-focus"
           />
+          {addressError && (
+            <p id="delivery-address-error" className="mt-2 text-sm font-medium text-error" role="alert">
+              Enter at least 10 characters so we can deliver to the correct address.
+            </p>
+          )}
         </div>
 
         {/* Payment Method */}
-        <section data-reveal className="bg-surface-container-lowest rounded-2xl p-5 lg:p-6 shadow-sm border border-surface-container-high mb-4 lg:col-start-1 lg:row-start-3">
+        <section data-reveal aria-labelledby="payment-method-heading" className="mb-4 border-y border-rule-2 bg-paper p-5 lg:col-start-1 lg:row-start-3 lg:p-6">
           <div className="flex items-center gap-4 text-left mb-4">
-            <div className="w-10 h-10 bg-secondary/10 rounded-full flex items-center justify-center text-secondary shrink-0">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center text-accent">
               <ShieldCheck size={20} />
             </div>
             <div className="flex-1">
-              <h3 className="font-bold text-on-surface text-sm">Mock Online Payment</h3>
+              <h3 id="payment-method-heading" className="font-bold text-on-surface text-sm">Mock Online Payment</h3>
               <p className="text-xs text-on-surface-variant mt-0.5">UPI, card, or netbanking sandbox flow</p>
             </div>
-            <ChevronRight size={20} className="text-outline" />
           </div>
           <div className="grid grid-cols-3 gap-2">
             {paymentMethods.map((method) => {
@@ -232,46 +251,56 @@ export default function Cart() {
                   key={method.id}
                   type="button"
                   onClick={() => setPaymentMethod(method.id)}
-                  className={`min-h-[86px] rounded-2xl border p-3 text-left transition-all active:scale-[0.98] ${
+                  aria-pressed={isActive}
+                  className={`min-h-[86px] border p-3 text-left transition-colors ${
                     isActive
-                      ? 'border-primary bg-primary text-white shadow-lg shadow-primary/20'
+                      ? 'border-ink bg-ink text-paper'
                       : 'border-surface-container-high bg-surface-container-lowest text-on-surface hover:border-primary/40'
                   }`}
                 >
-                  <Icon size={18} className={isActive ? 'text-white' : 'text-primary'} />
+                  <Icon size={18} className={isActive ? 'text-paper' : 'text-accent'} />
                   <p className="font-display font-bold text-sm mt-2">{method.label}</p>
-                  <p className={`text-[10px] leading-tight mt-1 ${isActive ? 'text-white/75' : 'text-on-surface-variant'}`}>{method.detail}</p>
+                  <p className={`mt-1 text-sm leading-tight ${isActive ? 'text-paper-2' : 'text-ink-2'}`}>{method.detail}</p>
                 </button>
               );
             })}
           </div>
         </section>
 
+        {checkoutError && (
+          <div className="mb-4 border-y border-error bg-error-container p-4 text-sm font-semibold text-on-error-container lg:col-start-1" role="alert">
+            {checkoutError}
+          </div>
+        )}
+
         {/* Promo */}
-        <div data-reveal className="bg-secondary-container/20 rounded-2xl p-4 border border-secondary/20 flex items-center justify-between mb-8 lg:col-start-1 lg:row-start-4">
+        <div data-reveal className="mb-8 flex items-center justify-between border-y border-rule bg-paper-2 p-4 lg:col-start-1">
           <div className="flex items-center gap-2">
              <CheckCircle2 size={16} className="text-secondary" />
-             <span className="text-xs font-bold text-secondary uppercase tracking-wider">NUTRIFLAT30 Applied</span>
+             <span className="text-sm font-medium text-accent">Demo promotion applied</span>
           </div>
-          <span className="text-xs font-bold text-secondary">-₹30.00</span>
+           <span className="text-xs font-bold text-secondary">-₹{pricing.promoDiscount}</span>
         </div>
       </main>
 
       {/* Payment Processing Modal Overlay */}
       {paymentStatus !== 'idle' && !showSuccess && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-5">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/60 p-5">
           <motion.div 
             ref={gatewayRef}
-            initial={{ scale: 0.9, opacity: 0 }}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="payment-dialog-title"
+            initial={{ scale: 0.98, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
-            className="bg-white rounded-3xl p-6 max-w-sm w-full shadow-2xl flex flex-col text-left overflow-hidden"
+            transition={{ duration: 0.22, ease: 'easeOut' }}
+            className="flex w-full max-w-sm flex-col overflow-hidden border-y-2 border-rule-2 bg-paper p-6 text-left"
           >
             {paymentStatus === 'processing' ? (
               <>
                 <div data-pay-animate className="flex items-center justify-between mb-6">
                   <div>
-                    <p className="text-[10px] uppercase tracking-widest text-primary font-bold">Nutrifibe Pay</p>
-                    <h3 className="text-xl font-bold font-display text-on-surface">Mock Gateway</h3>
+                    <h3 id="payment-dialog-title" className="text-xl font-bold font-display text-on-surface">Mock Gateway</h3>
                   </div>
                   <div className="relative w-14 h-14">
                     <div className="absolute inset-0 border-4 border-surface-container rounded-full"></div>
@@ -279,28 +308,29 @@ export default function Cart() {
                     <Wifi className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-primary" size={20} />
                   </div>
                 </div>
-                <div data-pay-animate className="rounded-2xl bg-surface-container-low p-4 mb-4 border border-surface-container-high">
+                <div data-pay-animate className="mb-4 border-y border-rule bg-paper-2 p-4">
                   <div className="flex justify-between items-center mb-3">
-                    <span className="text-xs font-bold text-on-surface-variant uppercase tracking-wider">Paying via {paymentMethod.toUpperCase()}</span>
-                    <span className="text-sm font-bold text-primary">₹{cart.price * cart.quantity}</span>
+                    <span className="text-sm font-medium text-ink-2">Paying via {paymentMethod}</span>
+                    <span className="text-sm font-bold text-primary">₹{pricing.total}</span>
                   </div>
-                  <div className="h-2 rounded-full bg-surface-container overflow-hidden">
+                  <div className="h-2 overflow-hidden bg-paper-3">
                     <motion.div
-                      initial={{ width: 0 }}
-                      animate={{ width: `${((paymentStep + 1) / paymentSteps.length) * 100}%` }}
-                      className="h-full rounded-full bg-primary"
+                      initial={{ scaleX: 0 }}
+                      animate={{ scaleX: (paymentStep + 1) / paymentSteps.length }}
+                      transition={{ duration: 0.22, ease: 'easeOut' }}
+                      className="h-full origin-left bg-ink"
                     />
                   </div>
                 </div>
-                <div data-pay-animate className="flex flex-col gap-3">
+                <div data-pay-animate className="flex flex-col gap-3" aria-live="polite">
                   {paymentSteps.map((step, index) => {
                     const done = index < paymentStep;
                     const active = index === paymentStep;
 
                     return (
                       <div key={step} className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                          done ? 'bg-primary text-white' : active ? 'bg-secondary-container text-primary' : 'bg-surface-container text-outline'
+                        <div className={`flex h-8 w-8 items-center justify-center ${
+                          done ? 'bg-ink text-paper' : active ? 'bg-paper-2 text-ink' : 'bg-paper-3 text-muted'
                         }`}>
                           {done ? <CheckCircle2 size={16} /> : active ? <Loader2 size={16} className="animate-spin" /> : <Receipt size={15} />}
                         </div>
@@ -312,18 +342,13 @@ export default function Cart() {
               </>
             ) : (
               <>
-                <motion.div 
-                  data-pay-animate
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  className="w-20 h-20 bg-secondary rounded-full flex items-center justify-center mb-6 text-white mx-auto"
-                >
+                <div data-pay-animate className="mx-auto mb-6 flex h-20 w-20 items-center justify-center bg-ink text-paper">
                   <CheckCircle2 size={40} />
-                </motion.div>
-                <h3 data-pay-animate className="text-xl font-bold font-display text-on-surface mb-2 text-center">Payment Successful</h3>
-                <p data-pay-animate className="text-sm text-on-surface-variant text-center mb-4">Mock transaction authorized. Confirming order...</p>
-                <div data-pay-animate className="bg-surface-container-low rounded-2xl p-4 border border-surface-container-high">
-                  <p className="text-[10px] uppercase tracking-wider text-on-surface-variant font-bold">Transaction ID</p>
+                </div>
+                <h3 id="payment-dialog-title" data-pay-animate className="text-xl font-bold font-display text-on-surface mb-2 text-center">Payment Successful</h3>
+                <p data-pay-animate className="text-sm text-on-surface-variant text-center mb-4">Mock transaction authorized. Confirming order…</p>
+                <div data-pay-animate className="border-y border-rule bg-paper-2 p-4">
+                  <p className="editorial-label">Transaction ID</p>
                   <p className="font-display font-bold text-on-surface">{transactionId}</p>
                 </div>
               </>
@@ -337,11 +362,10 @@ export default function Cart() {
         <button 
           onClick={handlePlaceOrder}
           disabled={loading || paymentStatus !== 'idle'}
-          className="w-full bg-primary text-white font-display font-bold h-14 rounded-full shadow-lg shadow-primary/30 flex items-center justify-center gap-2 active:scale-95 transition-all disabled:opacity-70 disabled:active:scale-100"
+          className="editorial-action w-full"
           id="pay-now-button"
         >
-          Proceed to Pay
-          <ArrowRight size={20} />
+          Pay ₹{pricing.total}
         </button>
       </div>
     </div>

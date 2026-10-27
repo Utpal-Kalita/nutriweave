@@ -1,49 +1,55 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+/* Hallmark · shape: product-led harvest · genre: playful consumer food · theme: Sunlit Harvest (custom, inspired by user-provided reference) · redesign: full
+ * hero: product stage · nav: leaf bar · footer: harvest field · imagery: rice and agriculture stand-ins · signature: five-question match tiles
+ * axes: warm/grotesk-sans/full-palette · posture: full palette · contrast: pass · fold: pass · v2.0.0 */
+/* Hallmark · pre-emit critique: P4 H5 E4 S5 R3 V5 · weakest: R, removed decorative extras and kept color tied to food, levels and actions */
+@import url('https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=DM+Mono:wght@500&family=DM+Sans:wght@400;500;700&display=swap');
 @import "tailwindcss";
+@import "./tokens.css";
+@import "./base.css" layer(base);
 
 @theme {
-  --color-primary: #135529;
-  --color-on-primary: #ffffff;
-  --color-primary-container: #2f6e3f;
-  --color-on-primary-container: #aaeeb3;
-  
-  --color-secondary: #2c6a3c;
-  --color-on-secondary: #ffffff;
-  --color-secondary-container: #acefb5;
-  --color-on-secondary-container: #306f40;
-  
-  --color-surface: #f8faf3;
-  --color-on-surface: #191d19;
-  --color-surface-container: #ecefe8;
-  --color-surface-container-low: #f2f5ee;
-  --color-surface-container-lowest: #ffffff;
-  --color-surface-container-high: #e6e9e2;
-  --color-surface-container-highest: #e1e3dd;
-  --color-on-surface-variant: #404940;
-  
-  --color-background: #f8faf3;
-  --color-on-background: #191d19;
-  
-  --color-tertiary: #793346;
-  --color-on-tertiary: #ffffff;
-  --color-tertiary-container: #964a5d;
-  --color-on-tertiary-container: #ffd3db;
+  --color-primary: var(--color-ink);
+  --color-on-primary: var(--color-paper);
+  --color-primary-container: var(--color-ink-2);
+  --color-on-primary-container: var(--color-paper);
 
-  --color-outline: #71796f;
-  --color-outline-variant: #c0c9bd;
+  --color-secondary: var(--color-accent);
+  --color-on-secondary: var(--color-accent-ink);
+  --color-secondary-container: var(--color-paper-2);
+  --color-on-secondary-container: var(--color-ink);
 
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-display: "Plus Jakarta Sans", var(--font-sans);
+  --color-surface: var(--color-paper);
+  --color-on-surface: var(--color-ink);
+  --color-surface-container: var(--color-paper-2);
+  --color-surface-container-low: var(--color-paper);
+  --color-surface-container-lowest: var(--color-paper);
+  --color-surface-container-high: var(--color-paper-3);
+  --color-surface-container-highest: var(--color-rule);
+  --color-on-surface-variant: var(--color-ink-2);
+  --color-surface-variant: var(--color-paper-3);
 
-  --radius-2xl: 1.25rem;
-  --radius-3xl: 2rem;
-  
-  --spacing-container: 20px;
+  --color-background: var(--color-paper);
+  --color-on-background: var(--color-ink);
+
+  --color-tertiary: var(--color-accent);
+  --color-on-tertiary: var(--color-accent-ink);
+  --color-tertiary-container: var(--color-paper-2);
+  --color-on-tertiary-container: var(--color-ink);
+
+  --color-outline: var(--color-muted);
+  --color-outline-variant: var(--color-rule);
+  --color-error-container: var(--color-paper-2);
+  --color-on-error-container: var(--color-error);
+  --color-primary-fixed: var(--color-paper-2);
+  --color-secondary-fixed: var(--color-paper-2);
+  --font-sans: var(--font-body);
+  --radius-2xl: var(--radius-card);
+  --radius-3xl: var(--radius-card);
+  --spacing-container: var(--gutter);
 }
 
 @layer base {
   body {
-    @apply bg-background text-on-background font-sans;
     min-width: 320px;
     min-height: 100vh;
   }
@@ -51,16 +57,91 @@
   #root {
     min-height: 100vh;
   }
-  
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-display tracking-tight;
+
+  h4, h5, h6 {
+    font-family: var(--font-display);
+    font-weight: var(--display-weight);
+    letter-spacing: var(--tracking-display);
+    line-height: 1.1;
+    overflow-wrap: break-word;
+    min-width: 0;
+    text-wrap: balance;
+  }
+
+  button, a {
+    transition-property: color, background-color, border-color, opacity, transform;
+    transition-duration: var(--dur-short);
+    transition-timing-function: var(--ease-out);
+  }
+
+  button:not(:disabled), a[href], [role="button"] {
+    cursor: pointer;
+  }
+
+  button:active {
+    transform: translateY(1px);
+  }
+
+  button:disabled, button[aria-disabled="true"] {
+    cursor: not-allowed;
+    opacity: 0.55;
+    transform: none;
   }
 }
 
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
+
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+.rule-double {
+  box-sizing: content-box;
+  height: 2px;
+  border: 0;
+  border-block: var(--rule-hair) solid var(--color-rule-2);
+}
+
+.editorial-label {
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+
+.editorial-action {
+  display: inline-flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xs);
+  border: var(--rule-hair) solid var(--color-ink);
+  border-radius: var(--radius-pill);
+  padding-inline: var(--space-lg);
+  background: var(--color-ink);
+  color: var(--color-paper);
+  font-family: var(--font-display);
+  font-weight: var(--display-weight);
+  white-space: nowrap;
+}
+
+.editorial-action:hover {
+  background: var(--color-ink-2);
+}
+
+.editorial-action--quiet {
+  border-color: var(--color-ink);
+  background: transparent;
+  color: var(--color-ink);
+}
+
+.editorial-action--quiet:hover {
+  background: var(--color-paper-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  button, a {
+    transition-duration: 0.01ms;
+  }
 }

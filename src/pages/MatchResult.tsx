@@ -1,192 +1,146 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowRight, Loader2, Sparkles } from 'lucide-react';
-import { motion } from 'motion/react';
+import { Loader2, PackageSearch } from 'lucide-react';
 import { useAuth } from '../contexts/AuthContext';
-import { getNutritionalRoadmap } from '../lib/gemini';
-import { ensureDemoProfile, getDemoProfile } from '../lib/demoStore';
+import { DemoProduct, getDemoProducts, getDemoProfile } from '../lib/demoStore';
+import {
+  calculateRiceRecommendation,
+  mapRecommendationToProduct,
+  PREFERENCE_OPTIONS,
+  RECOMMENDATION_QUESTIONS,
+  RecommendationAnswers,
+  RecommendationResult,
+} from '../lib/recommendation';
 
 export default function MatchResult() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [needleRotation, setNeedleRotation] = useState(-90);
-  const [level, setLevel] = useState<number | null>(null);
-  const [roadmap, setRoadmap] = useState<string | null>(null);
+  const [answers, setAnswers] = useState<RecommendationAnswers | null>(null);
+  const [result, setResult] = useState<RecommendationResult | null>(null);
+  const [product, setProduct] = useState<DemoProduct | null>(null);
   const [loading, setLoading] = useState(true);
-  const [roadmapLoading, setRoadmapLoading] = useState(false);
 
   useEffect(() => {
-    const fetchResult = async () => {
-      if (user) {
-        const data = getDemoProfile(user.id) || ensureDemoProfile(user);
-        
-        if (data?.matched_level) {
-          setLevel(data.matched_level);
-          // Animate needle: Level 1 is -90, Level 10 is 90
-          setTimeout(() => {
-            setNeedleRotation((data.matched_level - 5.5) * 20);
-          }, 500);
+    if (!user) return;
 
-          // Generate AI roadmap
-          setRoadmapLoading(true);
-          const aiRoadmap = await getNutritionalRoadmap({
-            minerals: data.minerals_priority,
-            glycemic: data.glycemic_priority,
-            protein: data.protein_priority
-          }, data.matched_level);
-          setRoadmap(aiRoadmap);
-          setRoadmapLoading(false);
-        }
-      }
+    const profile = getDemoProfile(user.id);
+    if (!profile?.recommendation_answers) {
+      navigate('/priority', { replace: true });
+      return;
+    }
+
+    try {
+      const nextResult = calculateRiceRecommendation(profile.recommendation_answers);
+      setAnswers(profile.recommendation_answers);
+      setResult(nextResult);
+      setProduct(mapRecommendationToProduct(getDemoProducts(), nextResult.level));
       setLoading(false);
-    };
+    } catch (error) {
+      console.error('Invalid saved recommendation:', error);
+      navigate('/priority', { replace: true });
+    }
+  }, [navigate, user]);
 
-    fetchResult();
-  }, [user]);
-
-  if (loading) {
+  if (loading || !answers || !result) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-surface">
-        <Loader2 className="animate-spin text-primary" size={48} />
+      <div className="flex min-h-[calc(100dvh-var(--nav-height))] w-full items-center justify-center bg-paper" role="status" aria-live="polite">
+        <div className="flex items-center gap-3 text-ink-2">
+          <Loader2 className="keep-motion animate-spin text-accent" size={24} aria-hidden="true" />
+          <span>Preparing your provisional match…</span>
+        </div>
       </div>
     );
   }
 
-  const levelInfo = {
-    title: level && level <= 3 ? 'Nutrient Max' : level && level <= 5 ? 'Balanced Core' : level && level <= 7 ? 'Smart Comfort' : 'Pure Comfort',
-    description: level && level <= 3 ? 'Your profile demands the highest concentration of functional nutrients for peak performance.' :
-                 level && level <= 5 ? 'Your metabolism thrives on a steady intake of complex carbohydrates and balanced proteins.' :
-                 level && level <= 7 ? 'You prefer a familiar taste profile with enhanced nutritional benefits for daily wellness.' :
-                 'Your focus is on traditional textures and flavors, optimized for mindful enjoyment.'
-  };
+  const overallAnswerLabel = PREFERENCE_OPTIONS.find((option) => option.value === answers.overallNutrition)?.label;
 
   return (
-    <div className="flex flex-col min-h-full bg-background items-center px-5 sm:px-8 lg:px-10 pt-8 lg:pt-12 pb-32 lg:pb-16">
-      <motion.div
-        initial={{ y: 20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        className="text-center mb-8 w-full max-w-7xl lg:text-left lg:mb-10"
-      >
-        <h1 className="text-4xl font-bold text-primary mb-3 font-display lg:text-5xl">Your Nutrifibe Match</h1>
-        <p className="text-lg text-on-surface-variant max-w-2xl">
-          Based on your metabolic profile, we've identified your optimal nutritional balance.
-        </p>
-      </motion.div>
-
-      {/* Gauge Dashboard Card */}
-      <motion.div 
-        initial={{ scale: 0.95, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.2 }}
-        className="bg-surface-container-lowest rounded-[32px] shadow-lg border border-[#EFE8D8] w-full max-w-7xl p-8 lg:p-12 grid grid-cols-1 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:items-center lg:gap-14 relative overflow-hidden"
-      >
-        <div className="flex min-w-0 flex-col items-center">
-        {/* Gauge Visual */}
-        <div className="relative w-full max-w-xl aspect-[2/1.1] flex items-end justify-center mb-6">
-          <svg className="w-full h-full drop-shadow-sm" viewBox="0 0 100 50">
-            {/* ... same SVG defs and paths ... */}
-            <defs>
-              <linearGradient id="grad1" x1="0%" x2="100%" y1="0%" y2="0%">
-                <stop offset="0%" stopColor="#135529" />
-                <stop offset="100%" stopColor="#2f6e3f" />
-              </linearGradient>
-              <linearGradient id="grad2" x1="0%" x2="100%" y1="0%" y2="0%">
-                <stop offset="0%" stopColor="#2f6e3f" />
-                <stop offset="100%" stopColor="#84cc16" />
-              </linearGradient>
-              <linearGradient id="grad3" x1="0%" x2="100%" y1="0%" y2="0%">
-                <stop offset="0%" stopColor="#84cc16" />
-                <stop offset="100%" stopColor="#f59e0b" />
-              </linearGradient>
-              <linearGradient id="grad4" x1="0%" x2="100%" y1="0%" y2="0%">
-                <stop offset="0%" stopColor="#f59e0b" />
-                <stop offset="100%" stopColor="#ea580c" />
-              </linearGradient>
-            </defs>
-            <path d="M 10 45 A 40 40 0 0 1 90 45" fill="none" stroke="#f1f5f9" strokeLinecap="round" strokeWidth="10" />
-            <path d="M 10 45 A 40 40 0 0 1 30 10.4" fill="none" stroke="url(#grad1)" strokeLinecap="round" strokeWidth="10" />
-            <path d="M 30 10.4 A 40 40 0 0 1 50 5" fill="none" stroke="url(#grad2)" strokeLinecap="round" strokeWidth="10" />
-            <path d="M 50 5 A 40 40 0 0 1 70 10.4" fill="none" stroke="url(#grad3)" strokeLinecap="round" strokeWidth="10" />
-            <path d="M 70 10.4 A 40 40 0 0 1 90 45" fill="none" stroke="url(#grad4)" strokeLinecap="round" strokeWidth="10" />
-
-            <g 
-              style={{ transform: `rotate(${needleRotation}deg)`, transformOrigin: '50px 45px' }}
-              className="transition-transform duration-[1500ms] cubic-bezier(0.34, 1.56, 0.64, 1)"
-            >
-              <line x1="50" y1="45" x2="50" y2="12" stroke="#1e293b" strokeWidth="3" strokeLinecap="round" />
-              <circle cx="50" cy="45" r="5" fill="#1e293b" />
-              <circle cx="50" cy="45" r="1.5" fill="#ffffff" />
-            </g>
-          </svg>
-          
-          <div className="absolute bottom-0 inset-x-0 flex flex-col items-center pb-2">
-            <span className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] font-sans">Level</span>
-            <span className="text-4xl font-extrabold text-primary tracking-tight leading-tight font-display">{level || '5'}</span>
+    <div className="min-h-full bg-paper-2 pb-28 text-ink lg:pb-0">
+      <main className="container py-10 lg:py-16">
+        <header className="grid gap-8 rounded-card bg-sky p-7 shadow-card sm:p-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:items-end lg:gap-16">
+          <div>
+            <h1 className="text-display-s">Your provisional rice match.</h1>
+            <p className="lead mt-5">The workbook rule produced this level. Nutritional is recorded, not calculated.</p>
           </div>
-        </div>
+          <dl className="grid grid-cols-2 overflow-hidden rounded-2xl bg-paper/80">
+            <div className="border-r border-ink/15 p-5">
+              <dt className="editorial-label">Nutrition priority</dt>
+              <dd className="mt-2 font-display text-4xl font-bold tabular-nums">{result.nutritionPriority} / 3</dd>
+            </div>
+            <div className="p-5">
+              <dt className="editorial-label">Taste priority</dt>
+              <dd className="mt-2 font-display text-4xl font-bold tabular-nums">{result.tastePriority} / 3</dd>
+            </div>
+          </dl>
+        </header>
 
-        <h2 className="text-2xl font-bold text-on-surface mb-2 font-display">{levelInfo.title}</h2>
-        <p className="text-base text-on-surface-variant text-center mb-8 font-sans px-4">
-          {levelInfo.description}
-        </p>
-        </div>
-
-        <div className="flex min-w-0 flex-col items-center lg:items-start">
-        {/* AI Roadmap Card */}
-        <div className="w-full bg-primary/5 rounded-2xl p-5 border border-primary/10 mb-6 text-left">
-          <div className="flex items-center gap-2 mb-3 text-primary">
-            <Sparkles size={18} fill="currentColor" />
-            <h3 className="font-bold text-sm uppercase tracking-wider">AI Nutritional Roadmap</h3>
+        <section className="mt-6 grid overflow-hidden rounded-card bg-paper shadow-card lg:grid-cols-[minmax(0,0.72fr)_minmax(0,1.28fr)]">
+          <div className="flex min-h-[420px] flex-col justify-center bg-leaf p-8 text-paper sm:p-12 lg:min-h-[560px]">
+            <span className="text-sm text-paper-2">Workbook recommendation</span>
+            <span className="mt-4 font-display text-[clamp(7rem,18vw,14rem)] font-bold leading-[0.75] tabular-nums">{result.level}</span>
+            <span className="mt-8 font-display text-3xl font-bold">Level {result.level}</span>
+            <span className="mt-2 font-outlier text-lg tabular-nums text-paper-2">{result.polishingPercentage}% polishing</span>
           </div>
-          {roadmapLoading ? (
-            <div className="flex items-center gap-3 text-on-surface-variant text-sm">
-              <Loader2 size={16} className="animate-spin" />
-              Generating your personalized insights...
+
+          <div className="flex flex-col justify-center p-6 sm:p-10 lg:p-16">
+            <h2>{result.variantName}</h2>
+            <p className="lead mt-5">{result.reason}</p>
+            <hr className="rule-double my-8" />
+            <p className="max-w-[65ch] text-ink-2">
+              The polishing percentage is the workbook’s variant definition. Nutrient and GI estimates are not presented as verified product facts.
+            </p>
+          </div>
+        </section>
+
+        <section className="mt-6 grid gap-10 rounded-card bg-paper p-6 shadow-card sm:p-8 lg:grid-cols-[minmax(0,0.65fr)_minmax(0,1.35fr)] lg:gap-16">
+          <div>
+            <h2 className="text-3xl">Your recorded answers</h2>
+            <p className="mt-4 text-ink-2">Nutritional was rated “{overallAnswerLabel}” and did not change this result. The include-in-maximum candidate remains inactive.</p>
+          </div>
+          <dl className="border-t border-rule-2">
+            {RECOMMENDATION_QUESTIONS.map((question) => {
+              const value = answers[question.id];
+              const label = PREFERENCE_OPTIONS.find((option) => option.value === value)?.label;
+              return (
+                <div key={question.id} className="grid grid-cols-[minmax(0,1fr)_auto] gap-6 border-b border-ink/15 py-4">
+                  <dt>{question.label}</dt>
+                  <dd className="font-medium text-ink-2">{label}</dd>
+                </div>
+              );
+            })}
+          </dl>
+        </section>
+
+        <section className="mt-6 rounded-card bg-harvest/45 p-6 shadow-card sm:p-8">
+          {product ? (
+            <div className="grid items-center gap-8 md:grid-cols-[180px_minmax(0,1fr)_auto]">
+              <img src={product.image_url} width="180" height="180" alt="" className="aspect-square w-full border border-rule object-cover grayscale" />
+              <div>
+                <h2 className="text-3xl">{product.name}</h2>
+                <p className="mt-3 max-w-[65ch] text-ink-2">{product.description}</p>
+                <p className="mt-4 font-outlier text-xl tabular-nums">₹{product.price}</p>
+              </div>
+              <button type="button" onClick={() => navigate('/customize')} className="editorial-action">View product</button>
             </div>
           ) : (
-            <div className="text-sm text-on-surface leading-relaxed whitespace-pre-wrap italic">
-              {roadmap || "Your personalized roadmap is being prepared. Enjoy your balanced match!"}
+            <div className="grid items-start gap-6 md:grid-cols-[auto_minmax(0,1fr)_auto] md:items-center">
+              <PackageSearch size={32} strokeWidth={1.5} aria-hidden="true" />
+              <div>
+                <h2 className="text-3xl">No catalog product is mapped yet.</h2>
+                <p className="mt-3 max-w-[70ch] text-ink-2">
+                  The catalog does not explicitly identify a product as the {result.polishingPercentage}% polishing variant. A legacy product has not been substituted, and a recommendation level is never treated as a product ID.
+                </p>
+              </div>
+              <span className="rounded-pill bg-paper px-4 py-2 text-sm font-bold text-ink-2">Mapping required</span>
             </div>
           )}
-        </div>
+        </section>
 
-        {/* Tags */}
-        <div className="flex flex-wrap justify-center lg:justify-start gap-2 w-full mb-6">
-          {['High Minerals', 'Steady Energy', 'Good Protein'].map((tag, i) => (
-            <motion.span 
-              key={tag}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.8 + (i * 0.1) }}
-              className={`font-bold text-xs px-4 py-2 rounded-full shadow-sm border ${
-                i === 0 ? 'bg-emerald-50 text-emerald-700 border-emerald-100' :
-                i === 1 ? 'bg-amber-50 text-amber-700 border-amber-100' :
-                'bg-blue-50 text-blue-700 border-blue-100'
-              }`}
-            >
-              {tag}
-            </motion.span>
-          ))}
+        <div className="flex flex-col gap-3 py-8 sm:flex-row sm:justify-between">
+          <button type="button" onClick={() => navigate('/priority')} className="editorial-action editorial-action--quiet">Change answers</button>
+          <button type="button" onClick={() => navigate('/scale')} className="editorial-action editorial-action--quiet">Read the three levels</button>
         </div>
-
-        <button
-          onClick={() => navigate('/scale')}
-          className="text-xs font-bold text-primary hover:underline flex items-center gap-1 group"
-          id="learn-about-scale"
-        >
-          Learn more about our nutritional scale
-          <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
-        </button>
-        <button
-          onClick={() => navigate('/customize')}
-          className="bg-primary hover:bg-primary-container text-white font-display text-lg font-semibold w-full py-4 rounded-full flex items-center justify-center gap-2 shadow-lg shadow-primary/20 active:scale-95 transition-all mt-8 lg:w-auto lg:min-w-64 lg:px-8"
-          id="continue-to-order-button"
-        >
-          Continue to Order
-          <ArrowRight size={20} />
-        </button>
-        </div>
-      </motion.div>
+      </main>
     </div>
   );
 }

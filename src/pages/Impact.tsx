@@ -1,102 +1,67 @@
 import React from 'react';
-import { Leaf, Activity, Beaker, Zap, Heart, Shield, Accessibility } from 'lucide-react';
-import { motion } from 'motion/react';
+import { RECOMMENDATION_VARIANTS } from '../lib/recommendation';
+
+const evidenceRows = [
+  ['Protein', 'Workbook estimate only', 'Laboratory or supplier verification required'],
+  ['Fibre and minerals', 'Workbook estimate only', 'Variant-specific testing required'],
+  ['Glycemic index', 'Measurement required', 'No low-GI label is currently supported'],
+] as const;
 
 export default function Impact() {
-  const metrics = [
-    { label: 'Iron', icon: Leaf, value: '+68%', color: 'bg-primary', accent: 'text-primary' },
-    { label: 'Zinc', icon: Beaker, value: '+55%', color: 'bg-secondary', accent: 'text-secondary' },
-    { label: 'Magnesium', icon: Zap, value: '+40%', color: 'bg-tertiary', accent: 'text-tertiary' }
-  ];
-
   return (
-    <div className="flex flex-col min-h-full bg-background w-full max-w-7xl mx-auto px-5 sm:px-8 lg:px-10 pt-8 lg:pt-12 pb-8">
-      {/* Header */}
-      <motion.div initial={{ y: 10, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="mb-8 max-w-2xl">
-        <h1 className="text-4xl font-bold text-on-surface mb-2 font-display lg:text-5xl">Your Impact</h1>
-        <p className="text-base text-on-surface-variant lg:text-lg">See how making the switch to Nutrifibe elevates your daily nutrition.</p>
-      </motion.div>
+    <div className="container min-h-full py-10 lg:py-16">
+      <header className="grid gap-8 border-b-2 border-rule-2 pb-10 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:items-end lg:gap-16">
+        <h1 className="text-display-s">Evidence before nutrition claims.</h1>
+        <p className="lead">Preference scores guide a polishing-level match. They are not product measurements.</p>
+      </header>
 
-      {/* Tabs */}
-      <div className="flex space-x-2 mb-8 overflow-x-auto pb-2 scrollbar-hide">
-        <button className="px-5 py-2.5 rounded-full bg-primary-container text-white font-semibold whitespace-nowrap shadow-sm">Nutrition</button>
-        <button className="px-5 py-2.5 rounded-full bg-surface-container text-on-surface-variant font-semibold whitespace-nowrap hover:bg-surface-container-high transition-colors">Energy</button>
-        <button className="px-5 py-2.5 rounded-full bg-surface-container text-on-surface-variant font-semibold whitespace-nowrap hover:bg-surface-container-high transition-colors">Progress</button>
-      </div>
-
-      {/* Hero Comparison Card */}
-      <div className="relative rounded-[32px] overflow-hidden shadow-md mb-10 bg-surface-container-lowest border border-surface-variant">
-        <div className="absolute inset-0 z-0">
-          <div className="absolute inset-0 bg-[#A67B5B]/5"></div>
-          <div className="absolute inset-0 bg-gradient-to-b from-transparent to-surface-container-lowest/90"></div>
-        </div>
-        
-        <div className="relative z-10 p-8 lg:p-10">
-          <div className="flex justify-between items-start mb-12 lg:mb-10">
-            <div>
-              <p className="text-[10px] font-bold text-primary uppercase tracking-[0.2em] mb-1 font-sans">Comparison</p>
-              <h2 className="text-3xl font-bold text-on-surface font-display leading-tight lg:text-4xl">Nutrifibe vs<br/>Regular Rice</h2>
-            </div>
-            <div className="bg-primary-container text-white rounded-full p-3 flex items-center justify-center shadow-lg shadow-primary/20">
-              <Leaf size={24} fill="currentColor" />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-            {metrics.map((m, i) => (
-              <motion.div 
-                key={m.label} 
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: 0.1 * i + 0.3 }}
-                className="bg-white/70 backdrop-blur-md rounded-2xl p-5 border border-white/50 shadow-sm"
-              >
-                <div className="flex justify-between items-center mb-3">
-                  <div className="flex items-center space-x-2">
-                    <m.icon size={18} className={m.accent} />
-                    <span className="font-bold text-on-surface">{m.label}</span>
-                  </div>
-                  <span className={`text-2xl font-bold ${m.accent}`}>{m.value}</span>
-                </div>
-                <div className="h-2 w-full bg-surface-container-high rounded-full overflow-hidden">
-                  <motion.div 
-                    initial={{ width: 0 }}
-                    animate={{ width: m.value }}
-                    transition={{ delay: 0.5 + 0.1 * i, duration: 1 }}
-                    className={`h-full ${m.color} rounded-full`}
-                  ></motion.div>
-                </div>
-                <div className="flex justify-between mt-2">
-                  <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Regular</span>
-                  <span className="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Nutrifibe</span>
-                </div>
-              </motion.div>
+      <section className="grid border-b border-rule lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+        <div className="py-12 pr-0 lg:pr-16">
+          <h2>What the workbook defines.</h2>
+          <p className="lead mt-5">Three recommendation levels and their polishing percentages are available now.</p>
+          <dl className="mt-8 border-y border-rule-2">
+            {([1, 2, 3] as const).map((level) => (
+              <div key={level} className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-6 border-b border-rule py-5 last:border-b-0">
+                <dt className="font-display text-2xl font-bold">Level {level}</dt>
+                <dd className="font-outlier text-xl tabular-nums">{RECOMMENDATION_VARIANTS[level].polishingPercentage}% polishing</dd>
+              </div>
             ))}
-          </div>
+          </dl>
         </div>
-      </div>
+        <aside className="border-t border-rule bg-paper-2 p-8 lg:border-l lg:border-t-0 lg:p-12">
+          <h2 className="text-3xl">What remains unverified.</h2>
+          <p className="mt-5 leading-relaxed text-ink-2">The workbook models nutrient retention through linear interpolation. Those figures are not tested Nutriweave product specifications.</p>
+        </aside>
+      </section>
 
-      {/* Key Benefits List */}
-      <div className="mb-10">
-        <h3 className="text-2xl font-bold text-on-surface mb-6 font-display">Key Benefits</h3>
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-          {[
-            { title: 'Heart Health', desc: 'Increased magnesium supports cardiovascular function.', icon: Heart, color: 'bg-secondary-container' },
-            { title: 'Immunity Boost', desc: 'Higher zinc content contributes to a resilient immune system.', icon: Shield, color: 'bg-primary-container/20' },
-            { title: 'Vitality', desc: '68% more iron ensures better oxygen transport.', icon: Zap, color: 'bg-tertiary-container/20' },
-          ].map((benefit) => (
-            <div key={benefit.title} className="flex items-start gap-4 p-5 bg-surface-container-lowest rounded-2xl border border-surface-variant shadow-sm">
-              <div className={`${benefit.color} p-3 rounded-xl shadow-sm`}>
-                <benefit.icon size={22} className="text-secondary" />
-              </div>
-              <div>
-                <h4 className="font-bold text-on-surface font-display">{benefit.title}</h4>
-                <p className="text-sm text-on-surface-variant mt-1 leading-relaxed">{benefit.desc}</p>
-              </div>
-            </div>
-          ))}
+      <section className="py-12">
+        <h2>Product data status.</h2>
+        <div className="mt-8 overflow-x-auto border-y-2 border-rule-2">
+          <table className="w-full min-w-[760px] border-collapse text-left">
+            <thead>
+              <tr className="border-b border-rule">
+                <th className="py-4 pr-6 font-medium">Data</th>
+                <th className="py-4 pr-6 font-medium">Current status</th>
+                <th className="py-4 font-medium">What is needed</th>
+              </tr>
+            </thead>
+            <tbody>
+              {evidenceRows.map(([name, status, need]) => (
+                <tr key={name} className="border-b border-rule last:border-b-0">
+                  <th className="py-5 pr-6 font-display text-xl">{name}</th>
+                  <td className="py-5 pr-6 text-ink-2">{status}</td>
+                  <td className="py-5 text-ink-2">{need}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
-      </div>
+      </section>
+
+      <section className="grid gap-8 border-y-2 border-rule-2 bg-ink px-6 py-10 text-paper lg:grid-cols-2 lg:px-10 lg:gap-16">
+        <p className="lead text-paper">Nutriweave does not currently claim that a variant manages diabetes or guarantees a blood sugar response.</p>
+        <p className="text-paper-2">Verified laboratory or supplier data can be added to the catalog later without changing the customer preference scale.</p>
+      </section>
     </div>
   );
 }

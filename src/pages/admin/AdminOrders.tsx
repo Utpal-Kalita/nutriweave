@@ -32,7 +32,7 @@ export default function AdminOrders() {
           <Loader2 className="animate-spin text-primary" size={32} />
         </div>
       ) : (
-        <div className="bg-white rounded-3xl border border-surface-container-high overflow-x-auto shadow-sm">
+        <div className="overflow-x-auto border-y-2 border-rule-2 bg-paper">
           <table className="w-full min-w-[860px] text-left">
             <thead className="bg-surface-container-lowest border-b border-surface-container-high text-on-surface-variant text-sm">
               <tr>
@@ -46,7 +46,7 @@ export default function AdminOrders() {
             <tbody className="divide-y divide-surface-container-high">
               {orders.map((order) => (
                 <tr key={order.id} className="hover:bg-surface-container-lowest/50 transition-colors">
-                  <td className="px-6 py-4 text-xs font-mono text-outline">{order.id.slice(0, 8)}...</td>
+                  <td className="px-6 py-4 text-xs font-mono text-outline">{order.id.slice(0, 8)}…</td>
                   <td className="px-6 py-4 font-medium">{order.profiles?.full_name || 'Unknown'}</td>
                   <td className="px-6 py-4">
                     <span className="font-bold">{order.product_name}</span>
@@ -57,7 +57,7 @@ export default function AdminOrders() {
                     <select
                       value={order.status}
                       onChange={(e) => updateStatus(order.id, e.target.value)}
-                      className="bg-surface-container-low border border-surface-container-high text-sm rounded-md px-2 py-1 outline-none focus:ring-1 focus:ring-primary"
+                      className="border border-muted bg-paper-2 px-2 py-1 text-sm outline-2 outline-offset-[-3px] outline-transparent focus-visible:outline-focus"
                     >
                       <option value="pending">Pending</option>
                       <option value="completed">Completed</option>

@@ -2,7 +2,10 @@ node_modules/
 build/
 dist/
 coverage/
+.hallmark/
 .DS_Store
 *.log
+*.pyc
+__pycache__/
 .env*
 !.env.example
